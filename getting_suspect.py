@@ -52,5 +52,8 @@ filtered_row_count = df_filtered.shape[0]
 print("Number of rows in the filtered DataFrame:", filtered_row_count)
 
 
+df2 = pd.read_csv(file_path)
+df2['total_casualties'] = df2['n_killed'] + df2['n_injured']
+df2.to_csv('Gun_violence_clean3.csv', index=False)
 #df_filtered.info()
 

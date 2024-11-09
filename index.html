@@ -5,13 +5,42 @@
         <title>4030 Project</title>
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+        <style>
+            /* Style for a vertical line down the middle */
+            .middle-line-vertical {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 50%;
+                width: 2px;
+                background-color: black;
+                transform: translateX(-50%);
+                z-index: 9999;
+            }
+
+            /* Style for a horizontal line across the middle */
+            .middle-line-horizontal {
+                position: fixed;
+                left: 0;
+                right: 0;
+                top: 50%;
+                height: 2px;
+                background-color: black;
+                transform: translateY(-50%);
+                z-index: 9999;
+            }
+        </style>
     </head>
     <body>
-        <h1>Project Prototype</h1>>
+        <h1>Project Prototype</h1>
         <svg id="histogram"></svg>
         <script src="script-histogramAK.js"></script>
         <!-- <script src="script-mapAK.js"></script>
         <script src="script-raceTM.js"></script>
         <script src="script-scattersTM.js"></script> -->
+
+        <!-- Middle line elements -->
+        <div class="middle-line-vertical"></div>
+        <div class="middle-line-horizontal"></div>
     </body>
 </html>
