@@ -1,5 +1,5 @@
 import pandas as pd
-
+"""
 def filter_and_clean_subject_suspect(df):
     # Identify relevant indices where `participant_type` contains "Subject-Suspect"
     df['relevant_indices'] = df['participant_type'].apply(
@@ -49,11 +49,27 @@ print(df_filtered[['incident_id', 'date', 'participant_age_group', 'participant_
 df_filtered.to_csv('suspect_file.csv', index=False)
 # Number of rows in the filtered DataFrame
 filtered_row_count = df_filtered.shape[0]
-print("Number of rows in the filtered DataFrame:", filtered_row_count)
+print("Number of rows in the filtered DataFrame:", filtered_row_count)"""
 
-
-df2 = pd.read_csv(file_path)
+file_path2 = '/Users/averykleptach/Desktop/Fall 2024/datavis/project/aklepta19.github.io/Gun_violence_clean3.csv'
+df2 = pd.read_csv(file_path2)
 df2['total_casualties'] = df2['n_killed'] + df2['n_injured']
+# Convert 'date' column to datetime format
+df2['date'] = pd.to_datetime(df2['date'], errors='coerce')
+# Map month numbers to month names
+month_map = {1: "January", 2: "February", 3: "March", 4: "April", 5: "May",
+            6: "June", 7: "July", 8: "August", 9: "September", 10: "October",
+            11: "November", 12: "December"}
+df2['month_name'] = df2['month'].map(month_map)
+
+# Create 'quarter' and 'month' columns based on the 'date' column
+df2['quarter'] = df2['date'].dt.quarter
+df2['month'] = df2['date'].dt.month
+row_count = df2.shape[0]
+print("Number of rows in the filtered DataFrame:", row_count)
+# Save the updated dataframe to a new CSV file
+#df2.to_csv('/path/to/your/Gun_violence_with_quarter_month.csv', index=False)
 df2.to_csv('Gun_violence_clean3.csv', index=False)
+print(df2[['incident_id', 'date', 'quarter', 'month_name']].head())
 #df_filtered.info()
 
