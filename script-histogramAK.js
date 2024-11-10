@@ -22,7 +22,7 @@ var selectedState = null;   // Store selected state for drill-down
 var selectedYear = null;    // Store selected year for drill-down
 
 // Load the modified CSV file
-d3.csv("Gun_violence_clean3.csv").then(function(data) {
+d3.csv("gun_data_with_rating.csv").then(function(data) {
     // Parse numeric columns and handle missing values
     data.forEach(d => {
         d.total_casualties = +d.total_casualties || 0;

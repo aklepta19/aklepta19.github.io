@@ -13,8 +13,8 @@ const svg = d3.select("#scatter-plot")
 
 // Parse the date format in your data
 const parseDate = d3.timeParse("%Y-%m-%d");
-
-d3.csv("Gun_violence_SE_clean_CSV.csv").then(data => {
+ //change to gun_data_with_rating.csv
+d3.csv("gun_data_with_rating.csv").then(data => {
       // Filter and format the data
   const incidentsByDate = d3.group(
     data.filter(d => {
