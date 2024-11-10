@@ -50,7 +50,7 @@ df_filtered.to_csv('suspect_file.csv', index=False)
 # Number of rows in the filtered DataFrame
 filtered_row_count = df_filtered.shape[0]
 print("Number of rows in the filtered DataFrame:", filtered_row_count)"""
-
+"""
 file_path2 = '/Users/averykleptach/Desktop/Fall 2024/datavis/project/aklepta19.github.io/Gun_violence_clean3.csv'
 df2 = pd.read_csv(file_path2)
 df2['total_casualties'] = df2['n_killed'] + df2['n_injured']
@@ -70,6 +70,47 @@ print("Number of rows in the filtered DataFrame:", row_count)
 # Save the updated dataframe to a new CSV file
 #df2.to_csv('/path/to/your/Gun_violence_with_quarter_month.csv', index=False)
 df2.to_csv('Gun_violence_clean3.csv', index=False)
-print(df2[['incident_id', 'date', 'quarter', 'month_name']].head())
+print(df2[['incident_id', 'date', 'quarter', 'month_name']].head())"""
 #df_filtered.info()
+
+
+import pandas as pd
+
+# Original gun data
+gun_data = pd.read_csv('/Users/averykleptach/Desktop/Fall 2024/datavis/project/aklepta19.github.io/Gun_violence_clean3.csv')
+
+# Provided rating data
+rating_data = {
+    'year': [2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013,
+             2014, 2014, 2014, 2014, 2014, 2014, 2014, 2014,
+             2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015,
+             2016, 2016, 2016, 2016, 2016, 2016, 2016, 2016,
+             2017, 2017, 2017, 2017, 2017, 2017, 2017, 2017],
+    'state': ["Delaware", "Florida", "Georgia", "Maryland", "North Carolina", "South Carolina", "Virginia", "West Virginia",
+              "Delaware", "Florida", "Georgia", "Maryland", "North Carolina", "South Carolina", "Virginia", "West Virginia",
+              "Delaware", "Florida", "Georgia", "Maryland", "North Carolina", "South Carolina", "Virginia", "West Virginia",
+              "Delaware", "Florida", "Georgia", "Maryland", "North Carolina", "South Carolina", "Virginia", "West Virginia",
+              "Delaware", "Florida", "Georgia", "Maryland", "North Carolina", "South Carolina", "Virginia", "West Virginia"],
+    'rating': ["B-", "F", "F", "A-", "F", "F", "D", "F",
+               "B-", "F", "F", "A-", "F", "F", "D", "F",
+               "B", "F", "F", "A-", "F", "F", "D", "D-",
+               "B", "F", "F", "A-", "D-", "F", "D", "F",
+               "B", "F", "F", "A-", "D-", "F", "D", "F"]
+}
+
+# Convert to DataFrame
+rating_df = pd.DataFrame(rating_data)
+
+# Merge this with the existing gun_data on 'year' and 'state' to add 'rating' column
+gun_data_with_rating = pd.merge(gun_data, rating_df, on=['year', 'state'], how='left')
+
+# Save the merged data with the new 'rating' column to a CSV file
+output_path = 'gun_data_with_rating.csv'
+gun_data_with_rating.to_csv(output_path, index=False)
+
+print("Data saved to:", output_path)
+
+# Display the first few rows to confirm the new column addition
+
+print(gun_data_with_rating.head())
 
