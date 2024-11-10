@@ -1,20 +1,15 @@
-var dimensions = {
-    width: 850,
-    height: 450,
-    margins: { top: 20, right: 30, bottom: 100, left: 80 }
-};
+// Define margins and dimensions
+const margin = { top: 20, right: 30, bottom: 50, left: 50 };
+const width = 800 - margin.left - margin.right;
+const height = 400 - margin.top - margin.bottom;
 
-var width = dimensions.width - dimensions.margins.left - dimensions.margins.right;
-var height = dimensions.height - dimensions.margins.top - dimensions.margins.bottom;
-
-var svg = d3.select("#histogram")
-    .attr("width", dimensions.width)
-    .attr("height", dimensions.height)
-    .style("position", "absolute")
-    .style("top", "0")
-    .style("left", "0")
-    .append("g")
-    .attr("transform", "translate(" + dimensions.margins.left + "," + dimensions.margins.top + ")");
+// Create SVG container
+const svg = d3.select("#scatter-plot")
+  .append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", `translate(${margin.left},${margin.top})`);
 
 // Parse the date format in your data
 const parseDate = d3.timeParse("%Y-%m-%d");
