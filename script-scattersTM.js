@@ -1,3 +1,4 @@
+/*
 var dimensions = {
     width: 850,
     height: 450,
@@ -10,7 +11,7 @@ const svg = d3.select("#scatter-plot")
   .attr("height", height + margin.top + margin.bottom)
   .append("g")
   .attr("transform", `translate(${margin.left},${margin.top})`);
-
+*/
 // Parse the date format in your data
 const parseDate = d3.timeParse("%Y-%m-%d");
 
