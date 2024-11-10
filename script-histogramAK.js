@@ -117,7 +117,7 @@ d3.csv("Gun_violence_clean3.csv").then(function(data) {
             .attr("y", d => y(d.value))
             .attr("width", x.bandwidth())
             .attr("height", d => height - y(d.value))
-            .style("fill", "#69b3a2")
+            .style("fill", "#1f77b4")
             .on("click", function(event, d) {
                 if (currentLevel === "state") {
                     currentLevel = "year";
