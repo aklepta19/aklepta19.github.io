@@ -2,7 +2,7 @@
 var dimensions = {
     width: 850,
     height: 450,
-    margins: { top: 20, right: 30, bottom: 100, left: 60 }
+    margins: { top: 20, right: 30, bottom: 100, left: 80 }
 };
 
 var width = dimensions.width - dimensions.margins.left - dimensions.margins.right;
@@ -108,7 +108,21 @@ d3.csv("Gun_violence_clean3.csv").then(function(data) {
             .attr("x", -30)
             .attr("fill", "black")
             .text(level === "state" ? "Total Casualties by State" : `Total Casualties in ${selectedState}`);
+        // Append y-axis to the SVG
+        svg.append("g")
+        .attr("class", "axis")
+        .call(d3.axisLeft(y));
 
+        // Add y-axis label with rotation
+        svg.append("text")
+        .attr("class", "y-axis-label")
+        .attr("transform", "rotate(-90)") // Rotate the text 90 degrees
+        .attr("y", -dimensions.margins.left + 20) // Position it to the left of the y-axis
+        .attr("x", -height / 2) // Center it along the y-axis
+        .attr("dy", "1em") // Add a little padding
+        .style("text-anchor", "middle")
+        .style("fill", "black")
+        .text("Total Casualties"); // Change this to your desired label text
         // Draw bars
         svg.selectAll("rect")
             .data(histogramData)
