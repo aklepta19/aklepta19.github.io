@@ -1,8 +1,8 @@
-// Define margins and dimensions
-const margin = { top: 20, right: 30, bottom: 50, left: 50 };
-const width = 800 - margin.left - margin.right;
-const height = 400 - margin.top - margin.bottom;
-
+var dimensions = {
+    width: 850,
+    height: 450,
+    margins: { top: 20, right: 30, bottom: 100, left: 80 }
+};
 // Create SVG container
 const svg = d3.select("#scatter-plot")
   .append("svg")
