@@ -1,95 +1,96 @@
-/*
-var dimensions = {
-    width: 850,
-    height: 450,
-    margins: { top: 20, right: 30, bottom: 100, left: 80 }
+// Set up SVG dimensions and margins for scatter plot
+var scatterDimensions = {
+  width: 1600,
+  height: 450,
+  margins: { top: 20, right: 30, bottom: 100, left: 80 }
 };
-// Create SVG container
-const svg = d3.select("#scatter-plot")
-  .append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform", `translate(${margin.left},${margin.top})`);
-*/
+
+var scatterWidth = scatterDimensions.width - scatterDimensions.margins.left - scatterDimensions.margins.right;
+var scatterHeight = scatterDimensions.height - scatterDimensions.margins.top - scatterDimensions.margins.bottom;
+
+// Create SVG container for scatter plot
+const scatterSvg = d3.select("#scatter-plot")
+.attr("width", scatterDimensions.width)
+.attr("height", scatterDimensions.height)
+.append("g")
+.attr("transform", `translate(${scatterDimensions.margins.left},${scatterDimensions.margins.top})`);
+
 // Parse the date format in your data
-const parseDate = d3.timeParse("%Y-%m-%d"); //might not need any more
- //change to gun_data_with_rating.csv
+const parseDate = d3.timeParse("%Y-%m-%d");
+const gradeOrder = ["F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"];
 
+// Load and process data
 d3.csv("gun_data_with_rating.csv").then(data => {
-      // Filter and format the data
-  const incidentsByDate = d3.group(
-    data.filter(d => {
-      // Parse date and keep only year-month-day
-      const dateString = d.date.split(" ")[0];
-      d.date = parseDate(dateString);
-      return d.date !== null;
-    }),
-    d => d.date // Group by date
-  );
+// Format and filter the data
+const filteredData = data.filter(d => {
+  d.date = parseDate(d.date); // Parse the date
+  const isValidGrade = gradeOrder.includes(d.rating);
+  return d.date !== null && isValidGrade; // Filter by valid date and grade only
+});
 
-  // Convert grouped data back to a flat array with vertical positioning
-  const processedData = [];
-  incidentsByDate.forEach((incidents, date) => {
-    incidents.forEach((d, i) => {
-      processedData.push({
-        date: date,
-        verticalIndex: i // Use the index within the group for vertical separation
-      });
-    });
-  });
+console.log("Filtered Data:", filteredData);
 
-  console.log("Processed data points:", processedData.length);
+// Define xScale for date (showing daily ticks)
+const xScale = d3.scaleTime()
+  .domain(d3.extent(filteredData, d => d.date))
+  .range([0, scatterWidth]);
 
-  // Define scales
-  const xScale = d3.scaleTime()
-    .domain(d3.extent(processedData, d => d.date))
-    .range([0, width]);
+// Define yScale for rating
+const yScale = d3.scalePoint()
+  .domain(gradeOrder)
+  .range([0, scatterHeight]);
 
-  // Determine the maximum vertical separation
-  const maxVerticalIndex = d3.max(processedData, d => d.verticalIndex);
-  const yScale = d3.scaleLinear()
-    .domain([0, maxVerticalIndex + 1]) // Add a bit of padding
-    .range([height, 0]);
+// Define axes with daily ticks
+const xAxis = d3.axisBottom(xScale)
+  .ticks(d3.timeYear.every(1))
+  .tickFormat(d3.timeFormat("%m"));
 
-  // Define axes
-  const xAxis = d3.axisBottom(xScale).ticks(d3.timeMonth.every(1));
-  const yAxis = d3.axisLeft(yScale).ticks(maxVerticalIndex + 1);
+const yAxis = d3.axisLeft(yScale);
 
-  // Add x-axis
-  svg.append("g")
-  .attr("transform", `translate(0, ${height})`)
+// Add x-axis with rotated labels
+scatterSvg.append("g")
+  .attr("transform", `translate(0, ${scatterHeight})`)
   .call(xAxis)
-  .selectAll("text") // Select all x-axis labels
-  .style("text-anchor", "end") // Anchor the text to the end for better alignment
-  .attr("dx", "-0.8em") // Horizontal offset to add some spacing
-  .attr("dy", "0.15em") // Vertical offset for alignment
-  .attr("transform", "rotate(-45)"); // Rotate the text by -45 degrees
+  .selectAll("text")
+  .style("text-anchor", "end")
+  .attr("dx", "-0.8em")
+  .attr("dy", "0.15em")
+  .attr("transform", "rotate(-45)");
 
-  // Add y-axis (optional, shows vertical indices)
-  svg.append("g")
-    .call(yAxis)
-    .append("text")
-    .attr("fill", "#000")
-    .attr("transform", "rotate(-90)")
-    .attr("x", -height / 2)
-    .attr("y", -40)
-    .attr("text-anchor", "middle")
-    .text("Incident Index");
+// Add y-axis with grade labels
+scatterSvg.append("g")
+  .call(yAxis);
 
-  // Create the scatter plot (each row is an individual point)
-  svg.selectAll("circle")
-    .data(processedData)
-    .enter()
-    .append("circle")
-    .attr("cx", d => xScale(d.date))
-    .attr("cy", d => yScale(d.verticalIndex))
-    .attr("r", 0.5)
-    .attr("fill", "steelblue")
-    .attr("opacity", 2)
-    .attr("stroke", "black")
-    .attr("stroke-width", 0.5);
+// Vertical jitter function to add randomness to y positions for visibility
+const verticalJitter = () => (Math.random() - 0.5) * 10;
+
+// Create the scatter plot with vertical jitter and transparency
+scatterSvg.selectAll("circle")
+  .data(filteredData)
+  .enter()
+  .append("circle")
+  .attr("cx", d => xScale(d.date))
+  .attr("cy", d => yScale(d.rating) + verticalJitter())
+  .attr("r", 1)
+  .attr("fill", "steelblue")
+  .attr("opacity", 0.7)
+  .attr("stroke", "black")
+  .attr("stroke-width", 0.3);
+
+// Add labels for axes
+scatterSvg.append("text")
+  .attr("x", scatterWidth / 2)
+  .attr("y", scatterHeight + 50)
+  .attr("text-anchor", "middle")
+  .text("Date (to the Day)");
+
+scatterSvg.append("text")
+  .attr("transform", "rotate(-90)")
+  .attr("x", -scatterHeight / 2)
+  .attr("y", -40)
+  .attr("text-anchor", "middle")
+  .text("Rating (Grade)");
 })
 .catch(error => {
-  console.error("Error loading or parsing CSV file:", error);
+console.error("Error loading or parsing CSV file:", error);
 });
