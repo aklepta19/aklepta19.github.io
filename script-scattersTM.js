@@ -1,6 +1,6 @@
 // Set up SVG dimensions and margins for scatter plot
 var scatterDimensions = {
-  width: 1600,
+  width: 850,
   height: 450,
   margins: { top: 20, right: 30, bottom: 100, left: 80 }
 };
@@ -9,7 +9,7 @@ var scatterWidth = scatterDimensions.width - scatterDimensions.margins.left - sc
 var scatterHeight = scatterDimensions.height - scatterDimensions.margins.top - scatterDimensions.margins.bottom;
 
 // Create SVG container for scatter plot
-const scatterSvg = d3.select("#scatter-plot")
+const scatterSvg1 = d3.select("#scatter-plot1")
                       .attr("width", scatterDimensions.width)
                       .attr("height", scatterDimensions.height)
                       .append("g")
@@ -48,7 +48,7 @@ d3.csv("gun_data_with_rating.csv").then(data => {
     const yAxis = d3.axisLeft(yScale);
 
     // Add x-axis with rotated labels
-    scatterSvg.append("g")
+    scatterSvg1.append("g")
       .attr("transform", `translate(0, ${scatterHeight})`)
       .call(xAxis)
       .selectAll("text")
@@ -58,14 +58,14 @@ d3.csv("gun_data_with_rating.csv").then(data => {
       .attr("transform", "rotate(-45)");
 
     // Add y-axis with grade labels
-    scatterSvg.append("g")
+    scatterSvg1.append("g")
       .call(yAxis);
 
     // Vertical jitter function to add randomness to y positions for visibility
     const verticalJitter = () => (Math.random() - 0.5) * 10;
 
     // Create the scatter plot with vertical jitter and transparency
-    scatterSvg.selectAll("circle")
+    scatterSvg1.selectAll("circle")
       .data(filteredData)
       .enter()
       .append("circle")
@@ -78,13 +78,13 @@ d3.csv("gun_data_with_rating.csv").then(data => {
       .attr("stroke-width", 0.3);
 
     // Add labels for axes
-    scatterSvg.append("text")
+    scatterSvg1.append("text")
       .attr("x", scatterWidth / 2)
       .attr("y", scatterHeight + 50)
       .attr("text-anchor", "middle")
       .text("Date (to the Day)");
 
-    scatterSvg.append("text")
+    scatterSvg1.append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -scatterHeight / 2)
       .attr("y", -40)
@@ -92,6 +92,6 @@ d3.csv("gun_data_with_rating.csv").then(data => {
       .text("Rating (Grade)");
     })
     .catch(error => {
-      console.error("Error loading or parsing CSV file:", error);
+    console.error("Error loading or parsing CSV file:", error);
     }
   );
