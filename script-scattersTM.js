@@ -29,7 +29,7 @@ const scatterSvg1 = d3.select("#scatter-plot1")
                       .attr("transform", `translate(${scatterDimensions.margins.left},${scatterDimensions.margins.top})`);
 
 // Parse the date format in your data
-const gradeOrder = ["F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"].reverse(); // reverse this shit
+const gradeOrder = ["F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"]; // reverse this shit
 const parseDate = d3.timeParse("%m/%d/%y");
 
 // Load and process data
