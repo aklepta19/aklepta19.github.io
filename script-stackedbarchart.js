@@ -3,11 +3,11 @@ d3.csv("suspect_file.csv")
         //console.log(dataset);
 
         var dimensions = {
-            width: 850,
+            width: 900,
             height: 450,
             margins: { 
                 top: 20, 
-                right: 70,  // Increased right margin to make space for the legend
+                right: 20,  // Increased right margin to make space for the legend
                 bottom: 100, 
                 left: 140
             }
@@ -96,10 +96,27 @@ d3.csv("suspect_file.csv")
            .selectAll("text")
            .attr("transform", "rotate(-45)")
            .style("text-anchor", "end");
+        
+           // Add x-axis label
+        svg.append("text")
+           .attr("class", "x-axis-label")
+           .attr("transform", `translate(${(dimensions.width - dimensions.margins.left - dimensions.margins.right) / 2}, ${dimensions.height - dimensions.margins.bottom + 60})`)
+           .style("text-anchor", "middle")
+           .text("Gender of Suspect");   
 
         // Add y-axis
         svg.append("g")
            .call(d3.axisLeft(yScale));
+
+        // Add y-axis label
+        svg.append("text")
+           .attr("class", "y-axis-label")
+           .attr("transform", "rotate(-90)")
+           .attr("y", -dimensions.margins.left+75)
+           .attr("x", -(dimensions.height - dimensions.margins.top - dimensions.margins.bottom) / 2)
+           .attr("dy", "1em")
+           .style("text-anchor", "middle")
+           .text("Number of Incidents");
 
         // Add a legend
         var legend = svg.append("g")
