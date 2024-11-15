@@ -1,6 +1,6 @@
 d3.csv("suspect_file.csv")
     .then(function(dataset) {
-        console.log(dataset);
+        //console.log(dataset);
 
         var dimensions = {
             width: 850,
@@ -9,7 +9,7 @@ d3.csv("suspect_file.csv")
                 top: 20, 
                 right: 70,  // Increased right margin to make space for the legend
                 bottom: 100, 
-                left: 100
+                left: 140
             }
         };
         

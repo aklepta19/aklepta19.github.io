@@ -16,19 +16,21 @@ const scatterSvg1 = d3.select("#scatter-plot1")
                       .attr("transform", `translate(${scatterDimensions.margins.left},${scatterDimensions.margins.top})`);
 
 // Parse the date format in your data
-const parseDate = d3.timeParse("%Y-%m-%d");
 const gradeOrder = ["F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"];
+const parseDate = d3.timeParse("%m/%d/%y");
 
 // Load and process data
 d3.csv("gun_data_with_rating.csv").then(data => {
-// Format and filter the data
-    const filteredData = data.filter(d => {
-        d.date = parseDate(d.date); // Parse the date
-    const isValidGrade = gradeOrder.includes(d.rating);
-        return d.date !== null && isValidGrade; // Filter by valid date and grade only
-    });
+    // Format and filter the data
+    const filteredData = data
+        .map(d => ({
+            date: parseDate(d.date), // Parse date
+            rating: d.rating // Include rating
+        }))
+        .filter(d => d.date !== null && gradeOrder.includes(d.rating));
 
-    console.log("Filtered Data:", filteredData);
+    //console.log("Filtered Data:", filteredData);
+    //console.log("Filtered Data:", filteredData.map(d => d.rating));
 
     // Define xScale for date (showing daily ticks)
     const xScale = d3.scaleTime()
@@ -71,7 +73,7 @@ d3.csv("gun_data_with_rating.csv").then(data => {
       .append("circle")
       .attr("cx", d => xScale(d.date))
       .attr("cy", d => yScale(d.rating) + verticalJitter())
-      .attr("r", 1)
+      .attr("r", 3) // Increase the radius for visibility
       .attr("fill", "steelblue")
       .attr("opacity", 0.7)
       .attr("stroke", "black")
@@ -92,6 +94,5 @@ d3.csv("gun_data_with_rating.csv").then(data => {
       .text("Rating (Grade)");
     })
     .catch(error => {
-    console.error("Error loading or parsing CSV file:", error);
-    }
-  );
+      console.error("Error loading or parsing CSV file:", error);
+    });

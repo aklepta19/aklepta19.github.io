@@ -2,7 +2,7 @@
 var dimensions = {
     width: 850,
     height: 450,
-    margins: { top: 20, right: 30, bottom: 100, left: 80 }
+    margins: { top: 20, right: 30, bottom: 90, left: 80 }
 };
 
 var width = dimensions.width - dimensions.margins.left - dimensions.margins.right;
@@ -59,8 +59,8 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
         }
 
         // Log data for debugging purposes
-        console.log("Current Level:", level);
-        console.log("Histogram Data:", histogramData);
+       // console.log("Current Level:", level);
+        //console.log("Histogram Data:", histogramData);
 
         // If no data, display a message instead of rendering
         if (!histogramData || histogramData.length === 0) {

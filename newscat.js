@@ -2,7 +2,7 @@
 var scatterDimensions2 = {
     width: 850,
     height: 450,
-    margins: { top: 100, right: 10, bottom: 140, left: 80 }
+    margins: { top: 100, right: 30, bottom: 150, left: 70 }
 };
 
 var scatterWidth2 = scatterDimensions2.width - scatterDimensions2.margins.left - scatterDimensions2.margins.right;
@@ -30,7 +30,7 @@ const gradeOrder2 = ["F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-
           return isValidGrade; // Filter by valid grade only
       });
   
-      console.log("Filtered Data:", filteredData);
+      //console.log("Filtered Data:", filteredData);
   
       // Define xScale for total casualties
       const xScale = d3.scaleLinear()
