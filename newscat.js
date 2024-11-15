@@ -1,8 +1,8 @@
 // Set up SVG dimensions and margins for scatter plot
 var scatterDimensions2 = {
   width: 850,
-  height: 450,
-  margins: { top: 100, right: 30, bottom: 150, left: 70 }
+  height: 550,
+  margins: { top: 80, right: 30, bottom: 200, left: 70 }
 };
 
 var scatterWidth2 = scatterDimensions2.width - scatterDimensions2.margins.left - scatterDimensions2.margins.right;
