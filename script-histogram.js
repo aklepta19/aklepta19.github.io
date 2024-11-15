@@ -2,7 +2,7 @@
 var dimensions = {
     width: 850,
     height: 450,
-    margins: { top: 20, right: 30, bottom: 90, left: 80 }
+    margins: { top: 20, right: 30, bottom: 90, left: 80 } // doesnt change anything 
 };
 
 var width = dimensions.width - dimensions.margins.left - dimensions.margins.right;
@@ -13,7 +13,7 @@ var svg = d3.select("#histogram")
     .attr("height", dimensions.height)
     .style("position", "absolute")
     .style("bottom", "0")
-    .style("left", "0")
+    .style("left", "20px")
     .append("g")
     .attr("transform", "translate(" + dimensions.margins.left + "," + dimensions.margins.top + ")");
 

@@ -12,7 +12,7 @@ function sampleData(data, sampleSize) {
 var scatterDimensions = {
   width: 850,
   height: 500,
-  margins: { top: 80, right: 30, bottom: 100, left: 80 }
+  margins: { top: 80, right: 30, bottom: 100, left: 90 }
 };
 
 var scatterWidth = scatterDimensions.width - scatterDimensions.margins.left - scatterDimensions.margins.right;
