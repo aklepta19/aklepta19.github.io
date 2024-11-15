@@ -1,8 +1,18 @@
+// Function to sample data
+function sampleData(data, sampleSize) {
+  const sampledData = [];
+  const step = Math.floor(data.length / sampleSize);
+  for (let i = 0; i < data.length; i += step) {
+    sampledData.push(data[i]);
+  }
+  return sampledData;
+}
+
 // Set up SVG dimensions and margins for scatter plot
 var scatterDimensions = {
-  width: 840,
+  width: 850,
   height: 450,
-  margins: { top: 20, right: 50, bottom: 100, left: 50 }
+  margins: { top: 20, right: 30, bottom: 100, left: 80 }
 };
 
 var scatterWidth = scatterDimensions.width - scatterDimensions.margins.left - scatterDimensions.margins.right;
@@ -12,11 +22,14 @@ var scatterHeight = scatterDimensions.height - scatterDimensions.margins.top - s
 const scatterSvg1 = d3.select("#scatter-plot1")
                       .attr("width", scatterDimensions.width)
                       .attr("height", scatterDimensions.height)
+                      .style("position", "absolute")
+                      .style("top", "0")
+                      .style("left", "0")
                       .append("g")
                       .attr("transform", `translate(${scatterDimensions.margins.left},${scatterDimensions.margins.top})`);
 
 // Parse the date format in your data
-const gradeOrder = ["F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"];
+const gradeOrder = ["F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"]; // reverse this shit
 const parseDate = d3.timeParse("%m/%d/%y");
 
 // Load and process data
@@ -29,12 +42,13 @@ d3.csv("gun_data_with_rating.csv").then(data => {
         }))
         .filter(d => d.date !== null && gradeOrder.includes(d.rating));
 
-    //console.log("Filtered Data:", filteredData);
-    //console.log("Filtered Data:", filteredData.map(d => d.rating));
+    // Sample the data to reduce its size
+    const sampleSize = 1000; // Adjust the sample size as needed
+    const sampledData = sampleData(filteredData, sampleSize);
 
-    // Define xScale for date (showing daily ticks)
+    // Define xScale for date (showing yearly ticks)
     const xScale = d3.scaleTime()
-          .domain(d3.extent(filteredData, d => d.date))
+          .domain(d3.extent(sampledData, d => d.date))
           .range([0, scatterWidth]);
 
     // Define yScale for rating
@@ -42,10 +56,10 @@ d3.csv("gun_data_with_rating.csv").then(data => {
           .domain(gradeOrder)
           .range([0, scatterHeight]);
 
-    // Define axes with daily ticks
+    // Define axes with yearly ticks
     const xAxis = d3.axisBottom(xScale)
           .ticks(d3.timeYear.every(1))
-          .tickFormat(d3.timeFormat("%m"));
+          .tickFormat(d3.timeFormat("%Y"));
 
     const yAxis = d3.axisLeft(yScale);
 
@@ -68,7 +82,7 @@ d3.csv("gun_data_with_rating.csv").then(data => {
 
     // Create the scatter plot with vertical jitter and transparency
     scatterSvg1.selectAll("circle")
-      .data(filteredData)
+      .data(sampledData)
       .enter()
       .append("circle")
       .attr("cx", d => xScale(d.date))
@@ -84,7 +98,7 @@ d3.csv("gun_data_with_rating.csv").then(data => {
       .attr("x", scatterWidth / 2)
       .attr("y", scatterHeight + 50)
       .attr("text-anchor", "middle")
-      .text("Date (to the Day)");
+      .text("Incident Date");
 
     scatterSvg1.append("text")
       .attr("transform", "rotate(-90)")
