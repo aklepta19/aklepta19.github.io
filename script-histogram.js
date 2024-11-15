@@ -21,7 +21,6 @@ var currentLevel = "state"; // Track the current level
 var selectedState = null;   // Store selected state for drill-down
 var selectedYear = null;    // Store selected year for drill-down
 
-// Load the modified CSV file
 d3.csv("gun_data_with_rating.csv").then(function(data) {
     // Parse numeric columns and handle missing values
     data.forEach(d => {
@@ -122,7 +121,8 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
         .attr("dy", "1em") // Add a little padding
         .style("text-anchor", "middle")
         .style("fill", "black")
-        .text("Total Casualties"); // Change this to your desired label text
+        .text("Total Casualties"); 
+
         // Draw bars
         svg.selectAll("rect")
             .data(histogramData)

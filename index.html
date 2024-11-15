@@ -12,7 +12,7 @@
                 font-family: Arial, sans-serif;
             }
 
-            /* White rectangles as fixed elements in specific corners */
+            /* BOTTOM */
             .background-rectangle {
                 position: fixed;
                 background-color: white;
@@ -22,6 +22,7 @@
                 height: 450px;
                 z-index: 0; /* Keep rectangles behind charts */
             }
+            /*TOP*/
             .background-rectangle2 {
                 position: fixed;
                 background-color: white;
@@ -31,22 +32,22 @@
                 height: 400px;
                 z-index: 0; /* Keep rectangles behind charts */
             }
-            /* Position each rectangle independently in each corner */
+            /* this is the year one*/
             #rect1 {
                 top: 55px;
                 left: 23px;
             }
-
+            /* this is the incidents one*/
             #rect2 {
                 top: 55px;
                 right: 23px;
             }
-
+            /* histogram?*/
             #rect3 {
                 bottom: 15px;
                 left: 23px;
             }
-
+            /* stacked??*/
             #rect4 {
                 bottom: 15px;
                 right: 23px;
