@@ -1,4 +1,5 @@
 // Function to sample data
+//rating and time
 function sampleData(data, sampleSize) {
   const sampledData = [];
   const step = Math.floor(data.length / sampleSize);
@@ -10,8 +11,8 @@ function sampleData(data, sampleSize) {
 
 // Set up SVG dimensions and margins for scatter plot
 var scatterDimensions = {
-  width: 850,
-  height: 500,
+  width: 900,
+  height: 650,
   margins: { top: 80, right: 30, bottom: 100, left: 90 }
 };
 
@@ -29,7 +30,7 @@ const scatterSvg1 = d3.select("#scatter-plot1")
                       .attr("transform", `translate(${scatterDimensions.margins.left},${scatterDimensions.margins.top})`);
 
 // Parse the date format in your data
-const gradeOrder = ["F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"]; // reverse this shit
+const gradeOrder = ["F", "D-", "D", "B-", "B", "B+", "A-", "A"]; // reverse this shit
 const parseDate = d3.timeParse("%m/%d/%y");
 
 // Load and process data
