@@ -60,10 +60,6 @@ d3.csv("gun_data_with_rating.csv").then(data => {
     // Vertical jitter for visibility
     const verticalJitter = () => (Math.random() - 0.5) * 20;
 
-    const color = d3.scaleOrdinal()
-                    .domain([...new Set(filteredData.map(d => d.state))]) // Get unique states
-                    .range(d3.schemeObservable10); // Use a predefined color scheme
-
     // Create scatter plot
     scatterSvg2.selectAll("circle")
         .data(filteredData)
@@ -78,7 +74,25 @@ d3.csv("gun_data_with_rating.csv").then(data => {
         .attr("fill", d => color(d.state))
         .attr("opacity", 0.7)
         .attr("stroke", "black")
-        .attr("stroke-width", 0.3);
+        .attr("stroke-width", 0.3)
+        .on("click", function(event, d) {
+          // Update selected state
+          selectedState = selectedState === d.state ? null : d.state;
+  
+          // Call centralized update function
+          updateCharts(selectedState); // Trigger updates for all charts
+      });
+      // Function to update the scatter plot based on the selected state
+      function updateScat(state) {
+        scatterSvg2.selectAll("circle")
+            .transition()
+            .duration(300)
+            .attr("fill", d => state && d.state !== state ? "grey" : color(d.state))
+            .attr("opacity", d => state && d.state !== state ? 0.3 : 1);
+      }
+       // Register this scatter plot's update logic
+       registerChart("scat", updateScat); // Register scatter plot
+  
 
     // Add x-axis label
     scatterSvg2.append("text")

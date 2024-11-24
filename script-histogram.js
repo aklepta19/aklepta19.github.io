@@ -21,7 +21,7 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
         d.state = d.state || "Unknown";
     });
 
-    let selectedState = null;
+    //let selectedState = null;
 
     // Aggregate data by state
     const stateData = Array.from(d3.rollup(
@@ -72,7 +72,7 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
         .style("font-size", "14px") // Adjust font size here
         .text("Total Casualties (Thousands)");
 
-    var color = d3.scaleOrdinal(d3.schemeObservable10);
+    
     // Draw bars
     svg.selectAll("rect")
         .data(stateData)
@@ -86,10 +86,17 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
             // Toggle selected state
             selectedState = selectedState === d.state ? null : d.state;
 
-            // Update bar colors
-            svg.selectAll("rect")
-                .transition()
-                .duration(300)
-                .attr("fill", d => selectedState && d.state !== selectedState ? "grey" : color(d.state));
+            // Call centralized update function for all charts
+            updateCharts(selectedState);
         });
+
+    // Register this histogram's update logic with the centralized updater
+    function updateHistogram(state) {
+        svg.selectAll("rect")
+            .transition()
+            .duration(300)
+            .attr("fill", d => state && d.state !== state ? "grey" : color(d.state));
+    }
+
+    registerChart("histogram", updateHistogram); // Register the histogram
 });

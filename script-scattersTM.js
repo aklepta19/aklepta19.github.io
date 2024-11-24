@@ -9,6 +9,7 @@ function sampleData(data, sampleSize) {
   return sampledData;
 }
 
+
 // Set up SVG dimensions and margins for scatter plot
 var scatterDimensions = {
   width: 900,
@@ -91,11 +92,7 @@ d3.csv("gun_data_with_rating.csv").then(data => {
     // Vertical jitter function to add randomness to y positions for visibility
     const verticalJitter = () => (Math.random() - 0.5) * 10;
 
-    // Create the scatter plot with vertical jitter and transparency
-    const color = d3.scaleOrdinal()
-        .domain([...new Set(sampledData.map(d => d.state))]) // Get unique states
-        .range(d3.schemeObservable10); 
-
+  
     scatterSvg1.selectAll("circle")
       .data(sampledData)
       .enter()
@@ -106,7 +103,24 @@ d3.csv("gun_data_with_rating.csv").then(data => {
       .attr("fill", d => color(d.state))
       .attr("opacity", 0.7)
       .attr("stroke", "black")
-      .attr("stroke-width", 0.3);
+      .attr("stroke-width", 0.3)
+      .on("click", function(event, d) {
+        // Update selected state
+        selectedState = selectedState === d.state ? null : d.state;
+
+        // Call centralized update function
+        updateCharts(selectedState); // Trigger updates for all charts
+    });
+    // Function to update the scatter plot based on the selected state
+    function updateScatterPlot(state) {
+      scatterSvg1.selectAll("circle")
+          .transition()
+          .duration(300)
+          .attr("fill", d => state && d.state !== state ? "grey" : color(d.state))
+          .attr("opacity", d => state && d.state !== state ? 0.3 : 1);
+    }
+     // Register this scatter plot's update logic
+     registerChart("scatterPlot", updateScatterPlot); // Register scatter plot
 
     // Add labels for axes
     scatterSvg1.append("text")
