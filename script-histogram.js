@@ -21,6 +21,8 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
         d.state = d.state || "Unknown";
     });
 
+    let selectedState = null;
+
     // Aggregate data by state
     const stateData = Array.from(d3.rollup(
         data,
@@ -45,13 +47,14 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
         .call(d3.axisBottom(x))
         .selectAll("text")
         //.attr("transform", "rotate(-0)")
-        .style("text-anchor", "end");
+        .style("text-anchor", "middle");
 
     // X-axis label
     svg.append("text")
         .attr("class", "x-axis-label")
         .attr("transform", `translate(${width / 2}, ${height + 50})`)
         .style("text-anchor", "middle")
+        .style("font-size", "14px") // Adjust font size here
         .text("State");
 
     // Y-axis
@@ -66,9 +69,10 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
         .attr("x", -height / 2)
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("Total Casualties");
+        .style("font-size", "14px") // Adjust font size here
+        .text("Total Casualties (Thousands)");
 
-
+    var color = d3.scaleOrdinal(d3.schemeObservable10);
     // Draw bars
     svg.selectAll("rect")
         .data(stateData)
@@ -77,5 +81,15 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
         .attr("y", d => y(d.casualties / 1000))
         .attr("width", x.bandwidth())
         .attr("height", d => height - y(d.casualties / 1000))
-        .attr("fill", "#69b3a2");
+        .attr("fill", d => color(d.state))
+        .on("click", function(event, d) {
+            // Toggle selected state
+            selectedState = selectedState === d.state ? null : d.state;
+
+            // Update bar colors
+            svg.selectAll("rect")
+                .transition()
+                .duration(300)
+                .attr("fill", d => selectedState && d.state !== selectedState ? "grey" : color(d.state));
+        });
 });

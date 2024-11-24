@@ -1,8 +1,8 @@
 // Set up SVG dimensions and margins for scatter plot
 var scatterDimensions2 = {
-  width: 800,
-  height: 550,
-  margins: { top: 80, right: 30, bottom: 200, left: 70 }
+  width: 750,
+  height: 650,
+  margins: { top: 80, right: 100, bottom: 200, left: 70 }
 };
 
 var scatterWidth2 = scatterDimensions2.width - scatterDimensions2.margins.left - scatterDimensions2.margins.right;
@@ -19,12 +19,12 @@ const scatterSvg2 = d3.select("#scatter-plot2")
                       .attr("transform", `translate(${scatterDimensions2.margins.left},${scatterDimensions2.margins.top})`);
 
 // Define the grade order for y-axis
-const gradeOrder2 = ["F", "D-", "D", "B-", "B", "B+", "A-", "A", "A+"];
+const gradeOrder2 = ["F", "D-", "D", "B-", "B", "B+", "A-", "A"];
 
 // Load and process data
 d3.csv("gun_data_with_rating.csv").then(data => {
     // Filter valid grades and format data
-    const filteredData = data.filter(d => gradeOrder2.includes(d.rating));
+    const filteredData = data.filter(d => gradeOrder2.includes(d.rating) && d.state);
 
     // Custom scale to map x values, including a gap between 30 and 90
     const xScale = d3.scaleLinear()
@@ -58,7 +58,11 @@ d3.csv("gun_data_with_rating.csv").then(data => {
     scatterSvg2.append("g").call(yAxis);
 
     // Vertical jitter for visibility
-    const verticalJitter = () => (Math.random() - 0.5) * 10;
+    const verticalJitter = () => (Math.random() - 0.5) * 20;
+
+    const color = d3.scaleOrdinal()
+                    .domain([...new Set(filteredData.map(d => d.state))]) // Get unique states
+                    .range(d3.schemeObservable10); // Use a predefined color scheme
 
     // Create scatter plot
     scatterSvg2.selectAll("circle")
@@ -70,8 +74,8 @@ d3.csv("gun_data_with_rating.csv").then(data => {
             return xScale(casualties >= 35 && casualties < 100 ? 100 : casualties); // Map values in the gap to 90
         })
         .attr("cy", d => yScale(d.rating) + verticalJitter())
-        .attr("r", 5)
-        .attr("fill", "steelblue")
+        .attr("r", 3)
+        .attr("fill", d => color(d.state))
         .attr("opacity", 0.7)
         .attr("stroke", "black")
         .attr("stroke-width", 0.3);
@@ -81,7 +85,8 @@ d3.csv("gun_data_with_rating.csv").then(data => {
         .attr("x", scatterWidth2 / 2)
         .attr("y", scatterHeight2 + 50)
         .attr("text-anchor", "middle")
-        .text("Total Casualties");
+        .attr("font-size", "14px")
+        .text("Total Casualties per Incident");
 
     // Add y-axis label
     scatterSvg2.append("text")
@@ -89,7 +94,8 @@ d3.csv("gun_data_with_rating.csv").then(data => {
         .attr("x", -scatterHeight2 / 2)
         .attr("y", -40)
         .attr("text-anchor", "middle")
-        .text("Rating (Grade)");
+        .attr("font-size", "14px")
+        .text("Gun Safety Rating");
 })
 .catch(error => {
     console.error("Error loading or parsing CSV file:", error);

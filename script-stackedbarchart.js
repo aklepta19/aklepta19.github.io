@@ -1,12 +1,12 @@
 d3.csv("suspect_file.csv").then(function(dataset) {
     var dimensions = {
         width: 900,
-        height: 450,
+        height: 350,
         margins: {
             top: 20,
-            right: 20,
-            bottom: 100,
-            left: 140
+            right: 50,
+            bottom: 50,
+            left: 290
         }
     };
     
@@ -56,18 +56,19 @@ d3.csv("suspect_file.csv").then(function(dataset) {
 
     // Add x-axis
     svg.append("g")
-        .attr("transform", `translate(0,${dimensions.height - dimensions.margins.bottom})`)
+        .attr("transform", `translate(0,${dimensions.height - dimensions.margins.top - dimensions.margins.bottom})`)
         .call(d3.axisBottom(xScale))
         .selectAll("text")
-        .attr("transform", "rotate(-45)")
-        .style("text-anchor", "end");
+        //.attr("transform", "rotate(-0)")
+        .style("text-anchor", "middle");
 
     // Add x-axis label
     svg.append("text")
         .attr("class", "x-axis-label")
-        .attr("transform", `translate(${(dimensions.width - dimensions.margins.left - dimensions.margins.right) / 2}, ${dimensions.height - dimensions.margins.bottom + 60})`)
+        .attr("transform", `translate(${(dimensions.width - dimensions.margins.left - dimensions.margins.right) / 2}, ${dimensions.height - dimensions.margins.bottom + 20})`)
         .style("text-anchor", "middle")
-        .text("Gender of Suspect");
+        .style("font-size", "14px")
+        .text("Gender of Suspect(s)");
 
     // Add y-axis
     svg.append("g")
@@ -77,9 +78,10 @@ d3.csv("suspect_file.csv").then(function(dataset) {
     svg.append("text")
         .attr("class", "y-axis-label")
         .attr("transform", "rotate(-90)")
-        .attr("y", -dimensions.margins.left + 75)
+        .attr("y", -dimensions.margins.left + 200)
         .attr("x", -(dimensions.height - dimensions.margins.top - dimensions.margins.bottom) / 2)
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("Total Casualties");
+        .style("font-size", "14px")
+        .text("Total Casualties (Thousands)");
 });
