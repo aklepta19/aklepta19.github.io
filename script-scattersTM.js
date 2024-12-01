@@ -39,7 +39,8 @@ d3.csv("gun_data_with_rating.csv").then(data => {
         .map(d => ({
             date: parseDate(d.date), // Parse date
             rating: d.rating, // Include rating
-            state: d.state
+            state: d.state,
+            incidentId: d.incident_id
         }))
         .filter(d => d.date !== null && gradeOrder.includes(d.rating) && d.state);
 
@@ -115,42 +116,34 @@ d3.csv("gun_data_with_rating.csv").then(data => {
         .attr("stroke", "black")
         .attr("stroke-width", 0.3)
         .on("click", function (event, d) {
-            event.stopPropagation(); // Prevent global click handler from firing
+             event.stopPropagation(); // Prevent global click handler from firing
 
-            if (selectedPoint === d) {
-                // If the same point is clicked, reset selection
-                selectedPoint = null;
-            } else {
-                // Otherwise, set the clicked point as selected
-                selectedPoint = d;
-            }
+            // Toggle selection
+            const clickedState = dashboardState.selectedState === d.state ? null : d.state;
+            const clickedIncidentId = dashboardState.selectedIncidentId === d.incidentId ? null : d.incidentId;
 
-            // Update circle styles based on the selected point
+            // Update global state with both `state` and `incidentId`
+            updateCharts({ state: clickedState, incidentId: clickedIncidentId });
+
+            // Update circle styles based on the selected state and incidentId
             scatterSvg1.selectAll("circle")
                 .transition()
                 .duration(300)
-                .attr("fill", c => (selectedPoint && c !== selectedPoint ? "grey" : color(c.state)))
-                .attr("opacity", c => (selectedPoint && c !== selectedPoint ? 0.3 : 1))
-                .attr("stroke", c => (selectedPoint && c === selectedPoint ? "black" : "none"))
-                .attr("stroke-width", c => (selectedPoint && c === selectedPoint ? 2 : 0))
-                .attr("r", c => (selectedPoint && c === selectedPoint ? 5 : 3)); // Increase size for selected point
+                .attr("fill", c =>
+                    (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incidentId !== clickedIncidentId)
+                        ? "grey"
+                        : color(c.state)
+                )
+                .attr("opacity", c =>
+                    (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incidentId !== clickedIncidentId)
+                        ? 0.3
+                        : 1
+                )
+                .attr("stroke", c => (clickedIncidentId && c.incidentId === clickedIncidentId ? "black" : "none"))
+                .attr("stroke-width", c => (clickedIncidentId && c.incidentId === clickedIncidentId ? 2 : 0))
+                .attr("r", c => (clickedIncidentId && c.incidentId === clickedIncidentId ? 5 : 3)); // Highlight selected
         });
 
-    // Add a global click listener to reset everything when clicking outside the scatter plot
-    document.addEventListener("click", function () {
-        // Reset the selected point
-        selectedPoint = null;
-
-        // Reset all circles to their default styles
-        scatterSvg1.selectAll("circle")
-            .transition()
-            .duration(300)
-            .attr("fill", d => color(d.state))
-            .attr("opacity", 0.7)
-            .attr("stroke", "none")
-            .attr("stroke-width", 0)
-            .attr("r", 3); // Reset radius
-    });
 
     // Flag to track the current view
     let isYearlyView = true;
@@ -234,16 +227,25 @@ d3.csv("gun_data_with_rating.csv").then(data => {
         }
     });
 
-    // Register the scatter plot's update logic
-    function updateScatterPlotState(state) {
+    
+    function updateScatterPlot2({ selectedState, selectedIncidentId }) {
         scatterSvg1.selectAll("circle")
             .transition()
             .duration(300)
-            .attr("fill", d => state && d.state !== state ? "grey" : color(d.state))
-            .attr("opacity", d => state && d.state !== state ? 0.3 : 1);
+            .attr("fill", d =>
+                (selectedState && d.state !== selectedState) || (selectedIncidentId && d.incidentId !== selectedIncidentId)
+                    ? "grey"
+                    : color(d.state)
+            )
+            .attr("opacity", d =>
+                (selectedState && d.state !== selectedState) || (selectedIncidentId && d.incidentId !== selectedIncidentId)
+                    ? 0.3
+                    : 1
+            );
     }
+    
 
-    registerChart("scatterPlot", updateScatterPlotState);
+    registerChart("scatterPlot", updateScatterPlot2);
 })
 .catch(error => {
     console.error("Error loading or parsing CSV file:", error);

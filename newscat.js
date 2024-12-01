@@ -90,25 +90,36 @@ function sampleData(data, sampleSize) {
           .attr("opacity", 0.7)
           .attr("stroke", "black")
           .attr("stroke-width", 0.3)
-          .on("click", function(event, d) {
-            // Update selected state
-            selectedState = selectedState === d.state ? null : d.state;
-    
-            // Call centralized update function
-            updateCharts(selectedState); // Trigger updates for all charts
+          .on("click", function (event, d) {
+            //const clickedState = d.state;
+            //const clickedIncidentId = d.incidentId;
+            const clickedState = dashboardState.selectedState === d.state ? null : d.state; // Toggle state
+            const clickedIncidentId = dashboardState.selectedIncidentId === d.incidentId ? null : d.incidentId; // Toggle incidentId
+            updateCharts({ state: clickedState, incidentId: clickedIncidentId });
         });
   
-      // Function to update the scatter plot based on the selected state
-      function updateScat(state) {
-          scatterSvg2.selectAll("circle")
-              .transition()
-              .duration(300)
-              .attr("fill", d => state && d.state !== state ? "grey" : color(d.state))
-              .attr("opacity", d => state && d.state !== state ? 0.3 : 1);
-      }
+      /// Register this scatter plot's update logic
+        function updateNewScatter({ selectedState, selectedIncidentId }) {
+            
+            scatterSvg2.selectAll("circle")
+                .transition()
+                .duration(300)
+                .attr("fill", d =>
+                    (selectedState && d.state !== selectedState) ||
+                    (selectedIncidentId && d.incidentId !== selectedIncidentId)
+                        ? "grey"
+                        : color(d.state)
+                )
+                .attr("opacity", d =>
+                    (selectedState && d.state !== selectedState) ||
+                    (selectedIncidentId && d.incidentId !== selectedIncidentId)
+                        ? 0.3
+                        : 1
+                );
+}
   
       // Register this scatter plot's update logic
-      registerChart("scat", updateScat); // Register scatter plot
+      registerChart("scat", updateNewScatter); // Register scatter plot
   
       // Add x-axis label
       scatterSvg2.append("text")
