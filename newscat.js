@@ -79,6 +79,7 @@ function sampleData(data, sampleSize) {
           .data(sampledData)
           .enter()
           .append("circle")
+          .attr("class", "chart-element")
           .attr("cx", d => {
               const casualties = +d.total_casualties;
               return xScale(casualties >= 35 && casualties < 100 ? 100 : casualties); // Map values in the gap to 90

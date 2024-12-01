@@ -16,5 +16,3 @@ function registerChart(name, updateFunction) {
 function updateCharts(selectedState) {
     Object.values(chartUpdaters).forEach(updateFn => updateFn(selectedState));
 }
-
-

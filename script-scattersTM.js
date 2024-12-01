@@ -106,6 +106,7 @@ d3.csv("gun_data_with_rating.csv").then(data => {
         .data(sampledData)
         .enter()
         .append("circle")
+        .attr("class", "chart-element")
         .attr("cx", d => xScale(d.date))
         .attr("cy", d => yScale(d.rating) + verticalJitter())
         .attr("r", 3) // Increase the radius for visibility
@@ -113,13 +114,43 @@ d3.csv("gun_data_with_rating.csv").then(data => {
         .attr("opacity", 0.7)
         .attr("stroke", "black")
         .attr("stroke-width", 0.3)
-        .on("click", function(event, d) {
-            // Update selected state
-            selectedState = selectedState === d.state ? null : d.state;
+        .on("click", function (event, d) {
+            event.stopPropagation(); // Prevent global click handler from firing
 
-            // Call centralized update function
-            updateCharts(selectedState); // Trigger updates for all charts
+            if (selectedPoint === d) {
+                // If the same point is clicked, reset selection
+                selectedPoint = null;
+            } else {
+                // Otherwise, set the clicked point as selected
+                selectedPoint = d;
+            }
+
+            // Update circle styles based on the selected point
+            scatterSvg1.selectAll("circle")
+                .transition()
+                .duration(300)
+                .attr("fill", c => (selectedPoint && c !== selectedPoint ? "grey" : color(c.state)))
+                .attr("opacity", c => (selectedPoint && c !== selectedPoint ? 0.3 : 1))
+                .attr("stroke", c => (selectedPoint && c === selectedPoint ? "black" : "none"))
+                .attr("stroke-width", c => (selectedPoint && c === selectedPoint ? 2 : 0))
+                .attr("r", c => (selectedPoint && c === selectedPoint ? 5 : 3)); // Increase size for selected point
         });
+
+    // Add a global click listener to reset everything when clicking outside the scatter plot
+    document.addEventListener("click", function () {
+        // Reset the selected point
+        selectedPoint = null;
+
+        // Reset all circles to their default styles
+        scatterSvg1.selectAll("circle")
+            .transition()
+            .duration(300)
+            .attr("fill", d => color(d.state))
+            .attr("opacity", 0.7)
+            .attr("stroke", "none")
+            .attr("stroke-width", 0)
+            .attr("r", 3); // Reset radius
+    });
 
     // Flag to track the current view
     let isYearlyView = true;
@@ -135,6 +166,7 @@ d3.csv("gun_data_with_rating.csv").then(data => {
             .data(data)
             .enter()
             .append("circle")
+            .attr("class", "chart-element")
             .attr("cx", d => xScale(d.date))
             .attr("cy", d => yScale(d.rating) + verticalJitter())
             .attr("r", 3)
