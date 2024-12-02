@@ -222,6 +222,8 @@ function sampleData(data, sampleSize) {
                   updateScatterPlot(yearData, xScaleMonth, xAxisMonth);
                   xAxisLabel.text(`Incident Date ${selectedYear}`);
                   registerChart("scatterPlot", updateScatterPlot(sampledData, xScale, xAxis));
+                  updateCharts({ selectedYear: clickedState, incidentId: clickedIncidentId });
+
 
               } else {
                   // Switch back to yearly view
@@ -236,26 +238,32 @@ function sampleData(data, sampleSize) {
   
       // Add click event to toggle between yearly and monthly views
       scatterSvg1.selectAll(".x-axis text").on("click.toggleView", function(event, d) {
-          if (isYearlyView) {
-              // Switch to monthly view
-              selectedYear = d.getFullYear();
-              const yearData = filteredData.filter(item => item.date.getFullYear() === selectedYear);
-              const xScaleMonth = d3.scaleTime()
-                  .domain([new Date(selectedYear, 0, 1), new Date(selectedYear, 11, 31)])
-                  .range([0, scatterWidth]);
-              const xAxisMonth = d3.axisBottom(xScaleMonth)
-                  .ticks(d3.timeMonth.every(1))
-                  .tickFormat(d3.timeFormat("%b"));
-  
-              updateScatterPlot(yearData, xScaleMonth, xAxisMonth);
-              xAxisLabel.text(`Incident Date ${selectedYear}`);
-          } else {
-              // Switch back to yearly view
-              updateScatterPlot(sampledData, xScale, xAxis);
-              xAxisLabel.text("Incident Date");
-          }
-          isYearlyView = !isYearlyView;
-      });
+        if (isYearlyView) {
+            // Switch to monthly view
+            selectedYear = d.getFullYear();
+    
+            // Update the global dashboard state
+            updateCharts({ year: selectedYear });
+    
+            const yearData = filteredData.filter(item => item.date.getFullYear() === selectedYear);
+            const xScaleMonth = d3.scaleTime()
+                .domain([new Date(selectedYear, 0, 1), new Date(selectedYear, 11, 31)])
+                .range([0, scatterWidth]);
+            const xAxisMonth = d3.axisBottom(xScaleMonth)
+                .ticks(d3.timeMonth.every(1))
+                .tickFormat(d3.timeFormat("%b"));
+    
+            updateScatterPlot(yearData, xScaleMonth, xAxisMonth);
+            xAxisLabel.text(`Incident Date ${selectedYear}`);
+        } else {
+            // Switch back to yearly view
+            updateCharts({ year: null });
+    
+            updateScatterPlot(sampledData, xScale, xAxis);
+            xAxisLabel.text("Incident Date");
+        }
+        isYearlyView = !isYearlyView;
+    });
   
       // Add click event to x-axis label to revert back to yearly view
       xAxisLabel.on("click.toggleView", function() {

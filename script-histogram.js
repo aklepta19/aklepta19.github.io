@@ -20,31 +20,69 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
         d.total_casualties = +d.total_casualties || 0;
         d.state = d.state || "Unknown";
         d.incident_id = d.incident_id || null;
-        date = parseDate(d.date) || null; // Parse date
+        //d.date = parseDate(d.date)
+        //d.year = +d.year || null;
+         // If there's a date column, parse it and extract the year
+        if (d.date) {
+            const parsedDate = new Date(d.date);
+            d.year = isNaN(parsedDate) ? null : parsedDate.getFullYear();
+        } else {
+            // Otherwise, ensure year is parsed as a number
+            d.year = +d.year || null;
+        }
     });
 
     //let selectedState = null;
 
-    const stateData = Array.from(d3.rollup(
-        data,
-        v => ({
-            casualties: d3.sum(v, d => d.total_casualties), // Total casualties
-            incidents: v.map(d => d.incident_id) // Collect all incident IDs
-        }),
-        d => d.state // Grouping by state
-        ), ([state, { casualties, incidents }]) => ({ state, casualties, incidents }))
-        .sort((a, b) => d3.descending(a.casualties, b.casualties)); // Sort by casualties in descending order
+        // Aggregate data by state and year
+    const stateData = Array.from(
+        d3.rollup(
+            data,
+            v => ({
+                casualties: d3.sum(v, d => d.total_casualties), // Sum casualties for the state and year
+                incidents: v.map(d => d.incident_id) // Collect all incident IDs
+            }),
+            d => `${d.state}-${d.year}` // Combine state and year for unique grouping
+        ),
+        ([key, { casualties, incidents }]) => {
+            const [state, year] = key.split("-"); // Split the combined key back into state and year
+            return {
+                state,
+                year: +year, // Parse year back to a number
+                casualties,
+                incidents
+            };
+        }
+    ).sort((a, b) => d3.descending(a.casualties, b.casualties));
+    // Aggregate data by state if no year is selected
+    const aggregatedData = Array.from(
+              d3.rollup(
+                  stateData, // Aggregate all years if no year is selected
+                  v => d3.sum(v, d => d.casualties),
+                  d => d.state
+              ),
+              ([state, casualties]) => ({
+                  state,
+                  year: "All Years", // Represent aggregated data
+                  casualties
+              })
+          );
+
+    console.log("State Data by State and Year:", stateData);
+    console.log("State Data by State and Year2:", aggregatedData);
+
     
+    // Set up scales domains
     
 
     // Set up scales
     var x = d3.scaleBand()
-        .domain(stateData.map(d => d.state))
+        .domain(aggregatedData.map(d => d.state))
         .range([0, width])
         .padding(0.1);
 
     var y = d3.scaleLinear()
-        .domain([0, d3.max(stateData, d => d.casualties)/1000])
+        .domain([0, d3.max(aggregatedData, d => d.casualties)/1000])
         .range([height, 0]);
 
     // X-axis
@@ -65,6 +103,7 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
 
     // Y-axis
     svg.append("g")
+        .attr("class", "y-axis")
         .call(d3.axisLeft(y));
 
     // Y-axis label
@@ -81,7 +120,7 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
     
     // Draw bars
     svg.selectAll("rect")
-        .data(stateData)
+        .data(aggregatedData)
         .enter().append("rect")
         .attr("x", d => x(d.state))
         .attr("y", d => y(d.casualties / 1000))
@@ -98,20 +137,82 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
 
     // Register this histogram's update logic with the centralized updater
     // Register this histogram's update logic
-    function updateHistogram({ selectedState}) {
-        
-        svg.selectAll("rect")
-            .transition()
-            .duration(300)
-            .attr("fill", d =>
-                    (selectedState && d.state !== selectedState)
-                        ? "grey"
-                        : color(d.state)
-                )
-                .attr("opacity", d =>
-                    (selectedState && d.state !== selectedState) ? 0.3: 1
-                );}
+    function updateHistogram({ selectedState, selectedYear }) {
+    console.log("Selected Year:", selectedYear);
 
+    // Aggregate data by state if no year is selected
+    const aggregatedData = selectedYear
+        ? stateData.filter(d => d.year === selectedYear) // Filter by selected year
+        : Array.from(
+              d3.rollup(
+                  stateData, // Aggregate all years if no year is selected
+                  v => d3.sum(v, d => d.casualties),
+                  d => d.state
+              ),
+              ([state, casualties]) => ({
+                  state,
+                  year: "All Years", // Represent aggregated data
+                  casualties
+              })
+          );
+
+    // Map the data to include visibility logic for selectedState
+    const filteredData = aggregatedData.map(d => ({
+        ...d,
+        isVisible: !selectedState || d.state === selectedState
+    }));
+
+    console.log("Filtered Data (with Aggregation):", filteredData);
+
+    // Extract only visible data for recalculating the y-scale
+    const visibleData = filteredData.filter(d => d.isVisible);
+    console.log("visible Data (with Aggregation):", visibleData);
+    // Calculate max casualties for the y-scale
+    const maxCasualties = d3.max(visibleData, d => d.casualties) || 0;
+    y.domain([0, maxCasualties / 1000]);
+    console.log("maxCasualties Data (with Aggregation):", maxCasualties);
+    console.log("Updated Y-Domain:", y.domain());
+    console.log("range", y.range());
+
+
+
+    // Bind filtered data to bars
+    const bars = svg.selectAll("rect").data(visibleData, d => d.state);
+
+    // Enter and update bars
+    bars.enter()
+        .append("rect")
+        .merge(bars)
+        .transition()
+        .duration(300)
+        .attr("x", d => x(d.state))
+        .attr("y", d => d.isVisible ? y(d.casualties / 1000) : height)
+        .attr("width", x.bandwidth())
+        .attr("height", d => d.isVisible ? height - y(d.casualties / 1000) : 0)
+        .attr("fill", d => (selectedState && d.state !== selectedState) ? "grey" : color(d.state))
+        .attr("opacity", d => d.isVisible ? 1 : 0);
+    // Remove bars that are no longer visible
+    bars.exit()
+        .transition()
+        .duration(300)
+        .attr("height", 0)
+        .remove();
+
+    // Update y-axis
+    svg.select(".y-axis")
+        .transition()
+        .duration(300)
+        .call(d3.axisLeft(y));
+    console.log("Updated Y-Domain:", y.domain());
+    
+
+}
+
+    
+    
+    
+    
+    
     
     
     registerChart("histogram", updateHistogram);
