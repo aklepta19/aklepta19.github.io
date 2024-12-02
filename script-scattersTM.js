@@ -267,7 +267,7 @@ function sampleData(data, sampleSize) {
             xAxisLabel.text(`Incident Date ${selectedYear}`);
         } else {
             // Switch back to yearly view
-            updateCharts({ year: null });
+            updateCharts({ year: 0 });
     
             updateScatterPlot(sampledData, xScale, xAxis);
             xAxisLabel.text("Incident Date");
@@ -279,7 +279,7 @@ function sampleData(data, sampleSize) {
       xAxisLabel.on("click.toggleView", function() {
           if (!isYearlyView) {
               updateScatterPlot(sampledData, xScale, xAxis);
-              updateCharts({ year: null });
+              updateCharts({ year: 0 });
               xAxisLabel.text("Incident Date");
               isYearlyView = true;
           }
