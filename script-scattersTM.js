@@ -35,15 +35,22 @@ function sampleData(data, sampleSize) {
   // Load and process data
   d3.csv("gun_data_with_rating.csv").then(data => {
       // Format and filter the data
-      const filteredData = data
-          .map(d => ({
-              date: parseDate(d.date), // Parse date
-              rating: d.rating, // Include rating
-              state: d.state,
-              incident_id: d.incident_id
-          }))
-          .filter(d => d.date !== null && gradeOrder.includes(d.rating) && d.state);
-  
+      // Format and filter the data
+    const filteredData = data.map(d => {
+        const genderField = d.participant_gender 
+            ? d.participant_gender.split("||").find(g => g.startsWith("0::")) 
+            : null;
+        const suspectGender = genderField ? genderField.split("::")[1] : null; // Extract gender of participant zero
+    
+        return {
+            date: parseDate(d.date),
+            rating: d.rating,
+            state: d.state,
+            incidentId: d.incident_id,
+            gender: suspectGender // Assign only the suspect's gender
+        };
+        
+    }).filter(d => d.date && gradeOrder.includes(d.rating) && d.state && d.gender); // Ensure valid data
       // Sample the data to reduce its size
       const sampleSize = 1000; // Adjust the sample size as needed
       const sampledData = sampleData(filteredData, sampleSize);
@@ -279,22 +286,35 @@ function sampleData(data, sampleSize) {
       });
   
       
-      function updateScatterPlot2({ selectedState, selectedIncidentId }) {
-          scatterSvg1.selectAll("circle")
-              .transition()
-              .duration(300)
-              .attr("fill", d =>
-                  (selectedState && d.state !== selectedState) || (selectedIncidentId && d.incident_id !== selectedIncidentId)
-                      ? "grey"
-                      : color(d.state)
-              )
-              .attr("opacity", d =>
-                  (selectedState && d.state !== selectedState) || (selectedIncidentId && d.incident_id !== selectedIncidentId)
-                      ? 0.3
-                      : 1
-              );
-        //showTooltip(event,d);
-      }
+      function updateScatterPlot2({ selectedState, selectedIncidentId, selectedGender }) {
+        scatterSvg1.selectAll("circle")
+            .transition()
+            .duration(300)
+            .attr("fill", d =>
+                (selectedState && d.state !== selectedState) || 
+                (selectedIncidentId && d.incidentId !== selectedIncidentId) || 
+                (selectedGender && d.gender !== selectedGender) ? 
+                    "grey" : color(d.state)
+            )
+            .attr("opacity", d =>
+                (selectedState && d.state !== selectedState) || 
+                (selectedIncidentId && d.incidentId !== selectedIncidentId) || 
+                (selectedGender && d.gender !== selectedGender) ? 
+                    0.3 : 1
+            )
+            .attr("stroke", d => 
+                (selectedIncidentId && d.incidentId === selectedIncidentId) || 
+                (selectedGender && d.gender === selectedGender) ? "black" : "none"
+            )
+            .attr("stroke-width", d => 
+                (selectedIncidentId && d.incidentId === selectedIncidentId) || 
+                (selectedGender && d.gender === selectedGender) ? 2 : 0
+            )
+            .attr("r", d => 
+                (selectedIncidentId && d.incidentId === selectedIncidentId) || 
+                (selectedGender && d.gender === selectedGender) ? 5 : 3
+            );
+    }
       
   
       registerChart("scatterPlot", updateScatterPlot2);
