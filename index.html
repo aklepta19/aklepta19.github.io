@@ -77,13 +77,38 @@
                 z-index: 1;
             }
             
-            h1{text-align: center;}
+            h1 {
+                text-align: center;
+            }
+
+            /* Clear Filters Button */
+            #button-container {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 9999; /* Ensure it stays above all other elements */
+            }
+            #clear-filters {
+                margin: 5px;
+                padding: 10px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            #clear-filters:hover {
+                background-color: #0056b3;
+            }
         </style>
     </head>
     <body>
         <h1>Gun Violence in the South Atlantic Region of the U.S. from 2014 - 2017</h1>
 
-
+        <!-- Clear Filters Button -->
+        <div id="button-container">
+            <button id="clear-filters">Clear Filters</button>
+        </div>
 
         <!-- White rectangles as independent background elements -->
         <div class="background-rectangle3" id="rect1"></div>
@@ -97,6 +122,21 @@
         <svg id="scatter-plot1" width="400" height="300" style="position:absolute; top: 50px; left: 50px; z-index: 1;"></svg>
         <svg id="scatter-plot2" width="400" height="300" style="position:absolute; top: 50px; right: 50px; z-index: 1;"></svg>
 
+        <script>
+            // Add event listener to clear filters button
+            document.getElementById("clear-filters").addEventListener("click", () => {
+                // Reset the dashboard state
+                dashboardState.selectedState = null;
+                dashboardState.selectedIncidentId = null;
+                dashboardState.selectedYear = null;
+                dashboardState.selectedGender = null;
+
+                console.log("Filters cleared. Current Dashboard State:", dashboardState);
+
+                // Update all charts with the reset state
+                updateCharts({});
+            });
+        </script>
         <script src="script-histogram.js"></script> 
         <script src="script-stackedbarchart.js"></script>
         <script src="script-scattersTM.js"></script> 

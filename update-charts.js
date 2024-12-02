@@ -2,7 +2,7 @@ const dashboardState = {
     selectedState: null,
     selectedIncidentId: null,
     selectedYear: null,
-    selectedGender: null
+    selectedGender: null,
 };
 
 // Object to hold update functions for all charts
@@ -18,6 +18,20 @@ function registerChart(name, updateFunction) {
     chartUpdaters[name] = updateFunction;
 }
 
+// Add event listener to clear filters button
+document.getElementById("clear-filters").addEventListener("click", () => {
+    // Reset the dashboard state
+    dashboardState.selectedState = null;
+    dashboardState.selectedIncidentId = null;
+    dashboardState.selectedYear = null;
+    dashboardState.selectedGender = null;
+
+
+    console.log("Filters cleared. Current Dashboard State:", dashboardState);
+
+    // Update all charts with the reset state
+    updateCharts({});
+});
 // Update all charts based on the merged state
 function updateCharts({ state = null, incidentId = null, gender = null, year = null }) {
     // Merge new filter values with the existing state
