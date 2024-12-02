@@ -133,87 +133,79 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
         .on("click", function(event, d) {
             const clickedState = dashboardState.selectedState === d.state ? null : d.state; // Toggle stat
             updateCharts({ state: clickedState});
+            //console.log("Current Dashboard State:", dashboardState);
         });
-
-    // Register this histogram's update logic with the centralized updater
-    // Register this histogram's update logic
-    function updateHistogram({ selectedState, selectedYear }) {
-    console.log("Selected Year:", selectedYear);
-
-    // Aggregate data by state if no year is selected
-    const aggregatedData = selectedYear
-        ? stateData.filter(d => d.year === selectedYear) // Filter by selected year
-        : Array.from(
-              d3.rollup(
-                  stateData, // Aggregate all years if no year is selected
-                  v => d3.sum(v, d => d.casualties),
-                  d => d.state
-              ),
-              ([state, casualties]) => ({
-                  state,
-                  year: "All Years", // Represent aggregated data
-                  casualties
-              })
-          );
-
-    // Map the data to include visibility logic for selectedState
-    const filteredData = aggregatedData.map(d => ({
-        ...d,
-        isVisible: !selectedState || d.state === selectedState
-    }));
-
-    console.log("Filtered Data (with Aggregation):", filteredData);
-
-    // Extract only visible data for recalculating the y-scale
-    const visibleData = filteredData.filter(d => d.isVisible);
-    console.log("visible Data (with Aggregation):", visibleData);
-    // Calculate max casualties for the y-scale
-    const maxCasualties = d3.max(visibleData, d => d.casualties) || 0;
-    y.domain([0, maxCasualties / 1000]);
-    console.log("maxCasualties Data (with Aggregation):", maxCasualties);
-    console.log("Updated Y-Domain:", y.domain());
-    console.log("range", y.range());
-
-
-
-    // Bind filtered data to bars
-    const bars = svg.selectAll("rect").data(visibleData, d => d.state);
-
-    // Enter and update bars
-    bars.enter()
-        .append("rect")
-        .merge(bars)
-        .transition()
-        .duration(300)
-        .attr("x", d => x(d.state))
-        .attr("y", d => d.isVisible ? y(d.casualties / 1000) : height)
-        .attr("width", x.bandwidth())
-        .attr("height", d => d.isVisible ? height - y(d.casualties / 1000) : 0)
-        .attr("fill", d => (selectedState && d.state !== selectedState) ? "grey" : color(d.state))
-        .attr("opacity", d => d.isVisible ? 1 : 0);
-    // Remove bars that are no longer visible
-    bars.exit()
-        .transition()
-        .duration(300)
-        .attr("height", 0)
-        .remove();
-
-    // Update y-axis
-    svg.select(".y-axis")
-        .transition()
-        .duration(300)
-        .call(d3.axisLeft(y));
-    console.log("Updated Y-Domain:", y.domain());
-    
-
-}
-
-    
-    
-    
-    
-    
-    
+        function updateHistogram({ selectedState, selectedYear }) {
+            console.log("Selected State:", selectedState, "Selected Year:", selectedYear);
+            console.log("Current Dashboard State:", dashboardState);
+        
+            // Filter or aggregate data based on the selected year
+            const aggregatedData = selectedYear
+                ? stateData.filter(d => d.year === selectedYear) // Filter by selected year
+                : Array.from(
+                      d3.rollup(
+                          stateData, // Sum casualties across all years if no year is selected
+                          v => d3.sum(v, d => d.casualties),
+                          d => d.state
+                      ),
+                      ([state, casualties]) => ({
+                          state,
+                          year: "All Years", // Represent aggregated data
+                          casualties
+                      })
+                  );
+        
+            console.log("Aggregated Data:", aggregatedData);
+        
+            // Adjust bar appearance based on the selected state
+            const filteredData = aggregatedData.map(d => ({
+                ...d,
+                isHighlighted: selectedState === null || d.state === selectedState, // Highlight selected state
+            }));
+        
+            console.log("Filtered Data (with Highlighting):", filteredData);
+        
+            // Recalculate the y-scale domain using all data
+            const maxCasualties = d3.max(filteredData, d => d.casualties) || 0;
+            y.domain([0, maxCasualties / 1000]);
+        
+            console.log("Updated Y-Domain:", y.domain());
+        
+            // Bind the data to the bars
+            const bars = svg.selectAll("rect").data(filteredData, d => d.state);
+        
+            // Enter and update bars
+            bars.enter()
+                .append("rect")
+                .merge(bars)
+                .transition()
+                .duration(300)
+                .attr("x", d => x(d.state))
+                .attr("y", d => y(d.casualties / 1000))
+                .attr("width", x.bandwidth())
+                .attr("height", d => height - y(d.casualties / 1000))
+                .attr("fill", d =>
+                    d.isHighlighted ? color(d.state) : "grey" // Highlight or grey out states
+                )
+                .attr("opacity", d => (d.isHighlighted ? 1 : 0.3)); // Lower opacity for non-highlighted states
+        
+            // Remove bars that are no longer in the data
+            bars.exit()
+                .transition()
+                .duration(300)
+                .attr("height", 0)
+                .remove();
+        
+            // Update y-axis
+            svg.select(".y-axis")
+                .transition()
+                .duration(300)
+                .call(d3.axisLeft(y));
+        }
+        
+        
+        
+        
     
     registerChart("histogram", updateHistogram);
     // Create a tooltip div (hidden by default)
@@ -237,7 +229,8 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
             `)
             .style("left", `${event.pageX + 10}px`) // Offset from mouse pointer
             .style("top", `${event.pageY + 10}px`)
-            .style("opacity", 1); // Make the tooltip visible
+            .style("opacity", 1) // Make the tooltip visible
+            .style("z-index", 9999); // Bring tooltip to the front
     }
     
     function moveTooltip(event) {

@@ -34,7 +34,19 @@ function sampleData(data, sampleSize) {
   // Load and process data
   d3.csv("gun_data_with_rating.csv").then(data => {
       // Filter valid grades and format data
-      const filteredData = data.filter(d => gradeOrder2.includes(d.rating) && d.state && d.incident_id);
+      //const filteredData = data.filter(d => gradeOrder2.includes(d.rating) && d.state && d.incident_id);
+        // Parse year from date or ensure it exists
+        data.forEach(d => {
+            // Parse the year from the date column if it exists
+            if (d.date) {
+                const parsedDate = new Date(d.date);
+                d.year = isNaN(parsedDate) ? null : parsedDate.getFullYear();
+            } else {
+                // Otherwise, ensure year is treated as a number
+                d.year = +d.year || null;
+            }
+        });
+        const filteredData = data.filter(d => gradeOrder2.includes(d.rating) && d.state && d.incident_id && d.year);
   
       // Sample the data to reduce its size
       const sampleSize = 1000; // Adjust the sample size as needed
@@ -93,27 +105,30 @@ function sampleData(data, sampleSize) {
           .on("click", function (event, d) {
             const clickedState = dashboardState.selectedState === d.state ? null : d.state; // Toggle state
             console.log(clickedState);
-            const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id; // Toggle incidentId
-            updateCharts({ state: clickedState, incidentId: clickedIncidentId });
+            updateCharts({ state: clickedState });
         });
   
-      /// Register this scatter plot's update logic
-        function updateNewScatter({ selectedState, selectedIncidentId }) {
-            
-            scatterSvg2.selectAll("circle")
-                .transition()
-                .duration(300)
-                .attr("fill", d =>
-                    (selectedState && d.state !== selectedState) 
-                        ? "grey"
-                        : color(d.state)
-                )
-                .attr("opacity", d =>
-                    (selectedState && d.state !== selectedState) 
-                        ? 0.2
-                        : 1
-                );
-}
+    function updateNewScatter({ selectedState, selectedYear }) {
+        scatterSvg2.selectAll("circle")
+            .transition()
+            .duration(300)
+            .attr("opacity", d => {
+                const isMatchingState = !selectedState || d.state === selectedState;
+                const isMatchingYear = !selectedYear || d.year === selectedYear;
+    
+                // Show only if both state and year match (or filters are not selected)
+                return isMatchingState && isMatchingYear ? 1 : 0;
+            })
+            .attr("r", d => {
+                const isMatchingState = !selectedState || d.state === selectedState;
+                const isMatchingYear = !selectedYear || d.year === selectedYear;
+    
+                // Hide points by reducing their radius
+                return isMatchingState && isMatchingYear ? 3 : 0;
+            });
+    }
+    
+
   
       // Register this scatter plot's update logic
       registerChart("scat", updateNewScatter); // Register scatter plot
