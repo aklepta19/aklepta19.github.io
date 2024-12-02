@@ -16,15 +16,22 @@ d3.csv("suspect_file.csv").then(function(dataset) {
                 .append("g")
                 .attr("transform", "translate(" + dimensions.margins.left + "," + dimensions.margins.top + ")");
 
-    // Initial aggregation of total casualties by gender
+    // Aggregate data by gender, counting incidents and collecting incident IDs
     const genderTotals = d3.rollups(
         dataset,
-        v => d3.sum(v, d => +d["total_casualties"] || 0),
+        v => ({
+            count: v.length, // Count the number of incidents
+            incidents: v.map(d => d.incident_id) // Collect all incident IDs
+        }),
         d => d.participant_gender || "Unknown"
     );
 
     // Flatten the nested structure into an array of objects
-    const formattedData = genderTotals.map(([gender, total]) => ({ gender, total }));
+    const formattedData = genderTotals.map(([gender, { count, incidents }]) => ({
+        gender,
+        count,
+        incidents
+    }));
 
     // Set up scales
     var xScale = d3.scaleBand()
@@ -33,7 +40,7 @@ d3.csv("suspect_file.csv").then(function(dataset) {
                     .padding(0.2);
 
     var yScale = d3.scaleLinear()
-                    .domain([0, d3.max(formattedData, d => d.total)])
+                    .domain([0, d3.max(formattedData, d => d.count)])
                     .range([dimensions.height - dimensions.margins.top - dimensions.margins.bottom, 0]);
 
     // Draw initial bars
@@ -42,13 +49,14 @@ d3.csv("suspect_file.csv").then(function(dataset) {
         .enter()
         .append("rect")
         .attr("x", d => xScale(d.gender))
-        .attr("y", d => yScale(d.total))
-        .attr("height", d => (dimensions.height - dimensions.margins.top - dimensions.margins.bottom) - yScale(d.total))
+        .attr("y", d => yScale(d.count))
+        .attr("height", d => (dimensions.height - dimensions.margins.top - dimensions.margins.bottom) - yScale(d.count))
         .attr("width", xScale.bandwidth())
         .attr("fill", "green")
         .on("click", function (event, d) {
             const clickedGender = dashboardState.selectedGender === d.gender ? null : d.gender; // Toggle gender
-            updateCharts({ gender: clickedGender });
+            const clickedIncidents = dashboardState.selectedIncidents === d.incidents ? null : d.incidents; // Toggle incidents
+            updateCharts({ gender: clickedGender, incidentId: clickedIncidents });
         });
 
     // Add x-axis
@@ -80,7 +88,9 @@ d3.csv("suspect_file.csv").then(function(dataset) {
         .attr("dy", "1em")
         .style("text-anchor", "middle")
         .style("font-size", "14px")
-        .text("Total Casualties");
+        .text("Number of Incidents");
+
+    // Tooltip logic
 
     // Update function to dynamically adjust bars
     function updateStacked({ selectedGender, selectedState, selectedIncidentId }) {
@@ -92,18 +102,25 @@ d3.csv("suspect_file.csv").then(function(dataset) {
             );
         });
 
-        // Recompute totals by gender
+        // Recompute totals by gender (count incidents)
         const genderTotals = d3.rollups(
             filteredData,
-            v => d3.sum(v, d => +d["total_casualties"] || 0),
+            v => ({
+                count: v.length,
+                incidents: v.map(d => d.incident_id)
+            }),
             d => d.participant_gender || "Unknown"
         );
 
         // Flatten into an array of objects
-        const formattedData = genderTotals.map(([gender, total]) => ({ gender, total }));
+        const formattedData = genderTotals.map(([gender, { count, incidents }]) => ({
+            gender,
+            count,
+            incidents
+        }));
 
         // Update yScale domain to reflect the new data
-        yScale.domain([0, d3.max(formattedData, d => d.total)]);
+        yScale.domain([0, d3.max(formattedData, d => d.count)]);
 
         // Update bars
         svg.selectAll("rect")
@@ -116,8 +133,8 @@ d3.csv("suspect_file.csv").then(function(dataset) {
             .transition()
             .duration(300)
             .attr("x", d => xScale(d.gender))
-            .attr("y", d => yScale(d.total))
-            .attr("height", d => (dimensions.height - dimensions.margins.top - dimensions.margins.bottom) - yScale(d.total))
+            .attr("y", d => yScale(d.count))
+            .attr("height", d => (dimensions.height - dimensions.margins.top - dimensions.margins.bottom) - yScale(d.count))
             .attr("width", xScale.bandwidth())
             .attr("fill", d =>
                 (selectedGender && d.gender !== selectedGender) ? "grey" : "blue"

@@ -34,7 +34,7 @@ function sampleData(data, sampleSize) {
   // Load and process data
   d3.csv("gun_data_with_rating.csv").then(data => {
       // Filter valid grades and format data
-      const filteredData = data.filter(d => gradeOrder2.includes(d.rating) && d.state);
+      const filteredData = data.filter(d => gradeOrder2.includes(d.rating) && d.state && d.incident_id);
   
       // Sample the data to reduce its size
       const sampleSize = 1000; // Adjust the sample size as needed
@@ -91,10 +91,9 @@ function sampleData(data, sampleSize) {
           .attr("stroke", "black")
           .attr("stroke-width", 0.3)
           .on("click", function (event, d) {
-            //const clickedState = d.state;
-            //const clickedIncidentId = d.incidentId;
             const clickedState = dashboardState.selectedState === d.state ? null : d.state; // Toggle state
-            const clickedIncidentId = dashboardState.selectedIncidentId === d.incidentId ? null : d.incidentId; // Toggle incidentId
+            console.log(clickedState);
+            const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id; // Toggle incidentId
             updateCharts({ state: clickedState, incidentId: clickedIncidentId });
         });
   
@@ -105,15 +104,13 @@ function sampleData(data, sampleSize) {
                 .transition()
                 .duration(300)
                 .attr("fill", d =>
-                    (selectedState && d.state !== selectedState) ||
-                    (selectedIncidentId && d.incidentId !== selectedIncidentId)
+                    (selectedState && d.state !== selectedState) 
                         ? "grey"
                         : color(d.state)
                 )
                 .attr("opacity", d =>
-                    (selectedState && d.state !== selectedState) ||
-                    (selectedIncidentId && d.incidentId !== selectedIncidentId)
-                        ? 0.3
+                    (selectedState && d.state !== selectedState) 
+                        ? 0.2
                         : 1
                 );
 }
