@@ -30,6 +30,15 @@ d3.csv("suspect_file.csv").then(function(dataset) {
         };
     });
 
+    // Check if all casualties are 0
+    const allZero = aggregatedData.every(d => d.total_casualties === 0);
+
+    // If all values are 0, clear the chart and display nothing
+    if (allZero) {
+        svg.selectAll("*").remove(); // Remove all bars and elements
+        return; // Exit early, so no bars are drawn
+    }
+
     // Set up scales
     var xScale = d3.scaleBand()
                     .domain(categories) // Fixed categories
@@ -112,6 +121,15 @@ d3.csv("suspect_file.csv").then(function(dataset) {
                 total_casualties: totalCasualties
             };
         });
+
+        // Check if all values are 0
+        //const allZero = aggregatedData.every(d => d.total_casualties === 0);
+
+        // If all values are 0, clear the chart and display nothing
+        //if (allZero) {
+        //    svg.selectAll("*").remove(); // Remove all bars and elements
+        //    return; // Exit early, so no bars are drawn
+        //}
 
         // Update yScale domain to reflect the new data
         yScale.domain([0, d3.max(aggregatedData, d => d.total_casualties)]);
