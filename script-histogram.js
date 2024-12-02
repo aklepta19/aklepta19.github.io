@@ -101,7 +101,7 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
         .style("font-size", "14px") // Adjust font size here
         .text("State");
 
-    // Y-axis
+    // Y-axisd
     svg.append("g")
         .attr("class", "y-axis")
         .call(d3.axisLeft(y));
