@@ -19,6 +19,7 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
     data.forEach(d => {
         d.total_casualties = +d.total_casualties || 0;
         d.state = d.state || "Unknown";
+        d.incident_id = d.incident_id || null;
     });
 
     //let selectedState = null;
@@ -83,20 +84,24 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
         .attr("height", d => height - y(d.casualties / 1000))
         .attr("fill", d => color(d.state))
         .on("click", function(event, d) {
-            // Toggle selected state
-            selectedState = selectedState === d.state ? null : d.state;
-
-            // Call centralized update function for all charts
-            updateCharts(selectedState);
+            const clickedState = dashboardState.selectedState === d.state ? null : d.state; // Toggle stat
+            //const clickedIncidentId = dashboardState.selectedIncidentId === d.incidentId ? null : d.incidentId; // Toggle incidentId
+            updateCharts({ state: clickedState});
         });
 
     // Register this histogram's update logic with the centralized updater
-    function updateHistogram(state) {
+    // Register this histogram's update logic
+    function updateHistogram({ selectedState}) {
         svg.selectAll("rect")
             .transition()
             .duration(300)
-            .attr("fill", d => state && d.state !== state ? "grey" : color(d.state));
-    }
-
-    registerChart("histogram", updateHistogram); // Register the histogram
+            .attr("fill", d =>
+                    (selectedState && d.state !== selectedState)
+                        ? "grey"
+                        : color(d.state)
+                )
+                .attr("opacity", d =>
+                    (selectedState && d.state !== selectedState) ? 0.3: 1
+                );}
+    registerChart("histogram", updateHistogram);
 });
