@@ -62,6 +62,9 @@ d3.csv("suspect_file.csv").then(function(dataset) {
         .attr("height", d => (dimensions.height - dimensions.margins.top - dimensions.margins.bottom) - yScale(d.total_casualties)) // Bar height
         .attr("width", barWidth) // Set the width using bandwidth (adjusted for better spacing)
         .attr("fill", "green")
+        .on("mouseover", showTooltip) // Show tooltip on hover
+        .on("mousemove", moveTooltip) // Move tooltip with the pointer
+        .on("mouseout", hideTooltip) // Hide tooltip on mouseout;
         .on("click", function (event, d) {
             const clickedGender = dashboardState.selectedGender === d.gender ? null : d.gender; // Toggle gender
             updateCharts({ 
@@ -161,4 +164,36 @@ d3.csv("suspect_file.csv").then(function(dataset) {
 
     // Register the chart for updates
     registerChart("stackedBarChart", updateStacked);
+    const tooltip = d3.select("body")
+        .append("div")
+        .attr("class", "tooltip")
+        .style("position", "absolute")
+        .style("background-color", "white")
+        .style("border", "1px solid #ccc")
+        .style("padding", "8px")
+        .style("border-radius", "4px")
+        .style("box-shadow", "0 2px 4px rgba(0,0,0,0.2)")
+        .style("pointer-events", "none") // Prevent interference with mouse events
+        .style("opacity", 0); // Initially hidden
+
+    // Function to handle tooltips
+    function showTooltip(event, d) {
+        tooltip
+            .html(`
+                <strong>Total Causalities:</strong> ${d.total_casualties}<br>
+            `)
+            .style("left", `${event.pageX + 10}px`) // Offset from mouse pointer
+            .style("top", `${event.pageY + 10}px`)
+            .style("opacity", 1); // Make the tooltip visible
+    }
+
+    function moveTooltip(event) {
+        tooltip
+            .style("left", `${event.pageX + 10}px`)
+            .style("top", `${event.pageY + 10}px`);
+    }
+
+    function hideTooltip() {
+        tooltip.style("opacity", 0); // Hide the tooltip
+    }
 });

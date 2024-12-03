@@ -102,31 +102,42 @@ function sampleData(data, sampleSize) {
           .attr("opacity", 0.7)
           .attr("stroke", "black")
           .attr("stroke-width", 0.3)
+          .on("mouseover", showTooltip) // Show tooltip on hover
+          .on("mousemove", moveTooltip) // Move tooltip with the pointer
+          .on("mouseout", hideTooltip) // Hide tooltip on mouseout;
           .on("click", function (event, d) {
             const clickedState = dashboardState.selectedState === d.state ? null : d.state; // Toggle state
             console.log(clickedState);
             updateCharts({ state: clickedState });
         });
   
-    function updateNewScatter({ selectedState, selectedYear }) {
-        scatterSvg2.selectAll("circle")
-            .transition()
-            .duration(300)
-            .attr("opacity", d => {
-                const isMatchingState = !selectedState || d.state === selectedState;
-                const isMatchingYear = !selectedYear || d.year === selectedYear;
-    
-                // Show only if both state and year match (or filters are not selected)
-                return isMatchingState && isMatchingYear ? 1 : 0;
-            })
-            .attr("r", d => {
-                const isMatchingState = !selectedState || d.state === selectedState;
-                const isMatchingYear = !selectedYear || d.year === selectedYear;
-    
-                // Hide points by reducing their radius
-                return isMatchingState && isMatchingYear ? 3 : 0;
-            });
-    }
+    function updateNewScatter({ selectedState, selectedYear, selectedIncidentId }) {
+        console.log("Updating scatter plot with selected state:", selectedIncidentId, selectedState, selectedYear);
+     
+
+    scatterSvg2.selectAll("circle")
+        .transition()
+        .duration(300)
+        .attr("opacity", d => {
+            const isMatchingState = !selectedState || d.state === selectedState;
+            const isMatchingYear = !selectedYear || d.year === selectedYear;
+            const isMatchingID = !selectedIncidentId || d.incident_id === selectedIncidentId;
+
+            // Highlight only matching data points
+            return (isMatchingState && isMatchingYear) ? 1 : 0;
+        })
+        .attr("r", d => {
+           const isMatchingID = d.incident_id === selectedIncidentId;
+            console.log(selectedIncidentId);
+
+            // Increase radius for selected incident
+            return isMatchingID ? 6 : 3;
+        })
+        .attr("stroke", d => (d.incident_id === selectedIncidentId ? "red" : "none"))
+        .attr("stroke-width", d => (d.incident_id === selectedIncidentId ? 2 : 0));
+        
+}
+
     
 
   
@@ -149,7 +160,43 @@ function sampleData(data, sampleSize) {
           .attr("text-anchor", "middle")
           .attr("font-size", "14px")
           .text("Gun Safety Rating");
-  })
+          const tooltip = d3.select("body")
+          .append("div")
+          .attr("class", "tooltip")
+          .style("position", "absolute")
+          .style("background-color", "white")
+          .style("border", "1px solid #ccc")
+          .style("padding", "8px")
+          .style("border-radius", "4px")
+          .style("box-shadow", "0 2px 4px rgba(0,0,0,0.2)")
+          .style("pointer-events", "none") // Prevent interference with mouse events
+          .style("opacity", 0); // Initially hidden
+      
+          // Function to handle tooltips
+          function showTooltip(event, d) {
+              tooltip
+                  .html(`
+                      <strong>Incident ID:</strong> ${d.incident_id}<br>
+                      <strong>Rating:</strong> ${d.rating}<br>
+                      <strong>Casualities:</strong> ${d.total_casualties}<br>
+                      <strong>State:</strong> ${d.state}
+                  `)
+                  .style("left", `${event.pageX + 10}px`) // Offset from mouse pointer
+                  .style("top", `${event.pageY + 10}px`)
+                  .style("opacity", 1); // Make the tooltip visible
+          }
+      
+          function moveTooltip(event) {
+              tooltip
+                  .style("left", `${event.pageX + 10}px`)
+                  .style("top", `${event.pageY + 10}px`);
+          }
+      
+          function hideTooltip() {
+              tooltip.style("opacity", 0); // Hide the tooltip
+          }
+      
+      })
   .catch(error => {
       console.error("Error loading or parsing CSV file:", error);
   });
