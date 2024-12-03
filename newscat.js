@@ -84,7 +84,7 @@ function sampleData(data, sampleSize) {
       scatterSvg2.append("g").call(yAxis);
   
       // Vertical jitter for visibility
-      const verticalJitter = () => (Math.random() - 0.5) * 20;
+      const verticalJitter = () => (Math.random() - 0.5) * 32;
   
       // Create scatter plot
       scatterSvg2.selectAll("circle")
@@ -99,7 +99,7 @@ function sampleData(data, sampleSize) {
           .attr("cy", d => yScale(d.rating) + verticalJitter())
           .attr("r", 3)
           .attr("fill", d => color(d.state))
-          .attr("opacity", 0.7)
+          .attr("opacity", 0.3)
           .attr("stroke", "black")
           .attr("stroke-width", 0.3)
           .on("mouseover", showTooltip) // Show tooltip on hover
@@ -124,7 +124,7 @@ function sampleData(data, sampleSize) {
             const isMatchingID = !selectedIncidentId || d.incident_id === selectedIncidentId;
 
             // Highlight only matching data points
-            return (isMatchingState && isMatchingYear) ? 1 : 0;
+            return (isMatchingState && isMatchingYear) ? .3 : 0;
         })
         .attr("r", d => {
            const isMatchingID = d.incident_id === selectedIncidentId;
