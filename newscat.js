@@ -183,7 +183,8 @@ function sampleData(data, sampleSize) {
                   `)
                   .style("left", `${event.pageX + 10}px`) // Offset from mouse pointer
                   .style("top", `${event.pageY + 10}px`)
-                  .style("opacity", 1); // Make the tooltip visible
+                  .style("opacity", 1) // Make the tooltip visible
+                  .style("z-index", 9999); // Bring tooltip to the front
           }
       
           function moveTooltip(event) {

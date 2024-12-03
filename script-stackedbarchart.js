@@ -31,11 +31,18 @@ d3.csv("suspect_file.csv").then(function(dataset) {
     });
 
     // Check if all casualties are 0
+    // Check if all casualties are 0
     const allZero = aggregatedData.every(d => d.total_casualties === 0);
 
     // If all values are 0, clear the chart and display nothing
     if (allZero) {
         svg.selectAll("*").remove(); // Remove all bars and elements
+        svg.append("text") // Optional: Display a message if no data
+            .attr("x", (dimensions.width - dimensions.margins.left - dimensions.margins.right) / 2)
+            .attr("y", dimensions.height / 2)
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .text("No data available");
         return; // Exit early, so no bars are drawn
     }
 
@@ -126,13 +133,19 @@ d3.csv("suspect_file.csv").then(function(dataset) {
         });
 
         // Check if all values are 0
-        //const allZero = aggregatedData.every(d => d.total_casualties === 0);
+        const allZero = aggregatedData.every(d => d.total_casualties === 0);
 
-        // If all values are 0, clear the chart and display nothing
-        //if (allZero) {
-        //    svg.selectAll("*").remove(); // Remove all bars and elements
-        //    return; // Exit early, so no bars are drawn
-        //}
+        if (allZero) {
+            svg.selectAll("rect").remove(); // Remove all bars and elements
+            svg.append("text") // Optional: Display a message if no data
+                .attr("x", (dimensions.width - dimensions.margins.left - dimensions.margins.right) / 2)
+                .attr("y", dimensions.height / 2)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                //.text("No data available");
+            return; // Exit early, so no bars are drawn
+        }
+    
 
         // Update yScale domain to reflect the new data
         yScale.domain([0, d3.max(aggregatedData, d => d.total_casualties)]);
@@ -184,7 +197,8 @@ d3.csv("suspect_file.csv").then(function(dataset) {
             `)
             .style("left", `${event.pageX + 10}px`) // Offset from mouse pointer
             .style("top", `${event.pageY + 10}px`)
-            .style("opacity", 1); // Make the tooltip visible
+            .style("opacity", 1) // Make the tooltip visible
+            .style("z-index", 9999); // Bring tooltip to the front
     }
 
     function moveTooltip(event) {
