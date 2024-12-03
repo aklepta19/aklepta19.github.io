@@ -46,7 +46,7 @@ function sampleData(data, sampleSize) {
             date: parseDate(d.date),
             rating: d.rating,
             state: d.state,
-            incidentId: d.incident_id,
+            incident_id: d.incident_id,
             gender: suspectGender // Assign only the suspect's gender
         };
         
@@ -166,7 +166,7 @@ function sampleData(data, sampleSize) {
   
           // Add new circles for the updated data
           scatterSvg1.selectAll("circle")
-              .data(data)
+              .data(sampledData)
               .enter()
               .append("circle")
               .attr("class", "chart-element")
@@ -229,8 +229,8 @@ function sampleData(data, sampleSize) {
                   updateScatterPlot(yearData, xScaleMonth, xAxisMonth);
                   xAxisLabel.text(`Incident Date ${selectedYear}`);
                   registerChart("scatterPlot", updateScatterPlot(filteredData, xScale, xAxis));
-                  updateCharts({ year: selectedYear });
-                  //updateCharts({ selectedYear: clickedState, incidentId: clickedIncidentId });
+                  //updateCharts({ year: selectedYear });
+                  updateCharts({ year: clickedState, incidentId: clickedIncidentId });
 
 
               } else {
@@ -302,14 +302,7 @@ function sampleData(data, sampleSize) {
                 (selectedGender && d.gender !== selectedGender) ? 
                     0.3 : 1
             )
-            .attr("stroke", d => 
-                (selectedIncidentId && d.incidentId === selectedIncidentId) || 
-                (selectedGender && d.gender === selectedGender) ? "black" : "none"
-            )
-            .attr("stroke-width", d => 
-                (selectedIncidentId && d.incidentId === selectedIncidentId) || 
-                (selectedGender && d.gender === selectedGender) ? 2 : 0
-            )
+            
             .attr("r", d => 
                 (selectedIncidentId && d.incidentId === selectedIncidentId) || 
                 (selectedGender && d.gender === selectedGender) ? 5 : 3
