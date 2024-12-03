@@ -58,7 +58,7 @@ function sampleData(data, sampleSize) {
       // Define xScale for date (extending to include 2018)
       const xScale = d3.scaleTime()
           .domain([
-              d3.min(filteredData, d => d.date), // Minimum date in the data
+              d3.min(sampledData, d => d.date), // Minimum date in the data
               new Date(2018, 0, 1) // Extend domain to include the end of 2018
           ])
           .range([0, scatterWidth]);
@@ -166,7 +166,7 @@ function sampleData(data, sampleSize) {
   
           // Add new circles for the updated data
           scatterSvg1.selectAll("circle")
-              .data(sampledData)
+              .data(data)
               .enter()
               .append("circle")
               .attr("class", "chart-element")
@@ -228,15 +228,15 @@ function sampleData(data, sampleSize) {
   
                   updateScatterPlot(yearData, xScaleMonth, xAxisMonth);
                   xAxisLabel.text(`Incident Date ${selectedYear}`);
-                  registerChart("scatterPlot", updateScatterPlot(filteredData, xScale, xAxis));
+                  registerChart("scatterPlot", updateScatterPlot(sampledData, xScale, xAxis));
                   //updateCharts({ year: selectedYear });
-                  updateCharts({ year: clickedState, incidentId: clickedIncidentId });
+                  //updateCharts({ selectedYear: clickedState, incidentId: clickedIncidentId });
 
 
               } else {
                   // Switch back to yearly view
                   ;
-                  registerChart("scatterPlot", updateScatterPlot(filteredData, xScale, xAxis));
+                  registerChart("scatterPlot", updateScatterPlot(sampledData, xScale, xAxis));
 
                   xAxisLabel.text("Incident Date");
               }
@@ -269,7 +269,7 @@ function sampleData(data, sampleSize) {
             // Switch back to yearly view
             updateCharts({ year: 0 });
     
-            updateScatterPlot(filteredData, xScale, xAxis);
+            updateScatterPlot(sampledData, xScale, xAxis);
             xAxisLabel.text("Incident Date");
         }
         isYearlyView = !isYearlyView;
@@ -278,7 +278,7 @@ function sampleData(data, sampleSize) {
       // Add click event to x-axis label to revert back to yearly view
       xAxisLabel.on("click.toggleView", function() {
           if (!isYearlyView) {
-              updateScatterPlot(filteredData, xScale, xAxis);
+              updateScatterPlot(sampledData, xScale, xAxis);
               updateCharts({ year: 0 });
               xAxisLabel.text("Incident Date");
               isYearlyView = true;
@@ -301,14 +301,6 @@ function sampleData(data, sampleSize) {
                 (selectedIncidentId && d.incidentId !== selectedIncidentId) || 
                 (selectedGender && d.gender !== selectedGender) ? 
                     0.3 : 1
-            )
-            .attr("stroke", d => 
-                (selectedIncidentId && d.incidentId === selectedIncidentId) || 
-                (selectedGender && d.gender === selectedGender) ? "black" : "none"
-            )
-            .attr("stroke-width", d => 
-                (selectedIncidentId && d.incidentId === selectedIncidentId) || 
-                (selectedGender && d.gender === selectedGender) ? 2 : 0
             )
             .attr("r", d => 
                 (selectedIncidentId && d.incidentId === selectedIncidentId) || 

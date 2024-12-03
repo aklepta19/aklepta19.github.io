@@ -24,7 +24,7 @@ function updateCharts({ state = undefined, incidentId = undefined, gender = unde
     dashboardState.selectedState = state === dashboardState.selectedState ? null : (state !== undefined ? state : dashboardState.selectedState);
     dashboardState.selectedIncidentId = incidentId === dashboardState.selectedIncidentId ? null : (incidentId !== undefined ? incidentId : dashboardState.selectedIncidentId);
     dashboardState.selectedGender = gender === dashboardState.selectedGender ? null : (gender !== undefined ? gender : dashboardState.selectedGender);
-    dashboardState.selectedYear = year === dashboardState.selectedYear || year === 0 ? null : (year !== undefined ? year : dashboardState.selectedYear);
+    dashboardState.selectedYear = year === dashboardState.selectedYear  ? null : (year !== undefined ? year : dashboardState.selectedYear);
 
     console.log("Updated Dashboard State:", dashboardState);
 
