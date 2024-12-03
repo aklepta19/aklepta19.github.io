@@ -68,8 +68,8 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
               })
           );
 
-    console.log("State Data by State and Year:", stateData);
-    console.log("State Data by State and Year2:", aggregatedData);
+    //console.log("State Data by State and Year:", stateData);
+    //console.log("State Data by State and Year2:", aggregatedData);
 
     
     // Set up scales domains
@@ -136,8 +136,8 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
             //console.log("Current Dashboard State:", dashboardState);
         });
         function updateHistogram({ selectedState, selectedYear }) {
-            console.log("Selected State:", selectedState, "Selected Year:", selectedYear);
-            console.log("Current Dashboard State:", dashboardState);
+            //console.log("Selected State:", selectedState, "Selected Year:", selectedYear);
+            //console.log("Current Dashboard State:", dashboardState);
         
             // Filter or aggregate data based on the selected year
             const aggregatedData = selectedYear
@@ -155,7 +155,7 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
                       })
                   );
         
-            console.log("Aggregated Data:", aggregatedData);
+            //console.log("Aggregated Data:", aggregatedData);
         
             // Adjust bar appearance based on the selected state
             const filteredData = aggregatedData.map(d => ({
@@ -163,13 +163,13 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
                 isHighlighted: selectedState === null || d.state === selectedState, // Highlight selected state
             }));
         
-            console.log("Filtered Data (with Highlighting):", filteredData);
+            //console.log("Filtered Data (with Highlighting):", filteredData);
         
             // Recalculate the y-scale domain using all data
             const maxCasualties = d3.max(filteredData, d => d.casualties) || 0;
             y.domain([0, maxCasualties / 1000]);
         
-            console.log("Updated Y-Domain:", y.domain());
+            //console.log("Updated Y-Domain:", y.domain());
         
             // Bind the data to the bars
             const bars = svg.selectAll("rect").data(filteredData, d => d.state);

@@ -229,6 +229,8 @@ function sampleData(data, sampleSize) {
                   updateScatterPlot(yearData, xScaleMonth, xAxisMonth);
                   xAxisLabel.text(`Incident Date ${selectedYear}`);
                   registerChart("scatterPlot", updateScatterPlot(sampledData, xScale, xAxis));
+                  isYearlyView = false;
+                  console.log("isYearlyView", isYearlyView);
                   //updateCharts({ year: selectedYear });
                   //updateCharts({ selectedYear: clickedState, incidentId: clickedIncidentId });
 
@@ -240,7 +242,7 @@ function sampleData(data, sampleSize) {
 
                   xAxisLabel.text("Incident Date");
               }
-              isYearlyView = !isYearlyView;
+              isYearlyView = true;
           });
       }
   
@@ -249,10 +251,10 @@ function sampleData(data, sampleSize) {
         if (isYearlyView) {
             // Switch to monthly view
             selectedYear = d.getFullYear();
-            console.log("Current Dashboard Statescats:", dashboardState);
+            console.log("Current Dashboard Statescats: click", dashboardState);
             // Update the global dashboard state
             updateCharts({ year: selectedYear });
-            console.log("Current Dashboard Statescats:", dashboardState);
+            console.log("Current Dashboard Statescats: clicky", dashboardState);
 
     
             const yearData = filteredData.filter(item => item.date.getFullYear() === selectedYear);
@@ -265,23 +267,25 @@ function sampleData(data, sampleSize) {
     
             updateScatterPlot(yearData, xScaleMonth, xAxisMonth);
             xAxisLabel.text(`Incident Date ${selectedYear}`);
+            isYearlyView = false;
         } else {
             // Switch back to yearly view
-            updateCharts({ year: 0 });
-    
+            updateCharts({ year: null });
+            isYearlyView = true;
             updateScatterPlot(sampledData, xScale, xAxis);
             xAxisLabel.text("Incident Date");
         }
-        isYearlyView = !isYearlyView;
+       // isYearlyView = true;
     });
   
       // Add click event to x-axis label to revert back to yearly view
       xAxisLabel.on("click.toggleView", function() {
           if (!isYearlyView) {
               updateScatterPlot(sampledData, xScale, xAxis);
-              updateCharts({ year: 0 });
+              updateCharts({ year: null });
               xAxisLabel.text("Incident Date");
               isYearlyView = true;
+              console.log("isYearlyView", isYearlyView);
           }
       });
   

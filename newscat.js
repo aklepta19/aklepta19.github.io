@@ -107,12 +107,12 @@ function sampleData(data, sampleSize) {
           .on("mouseout", hideTooltip) // Hide tooltip on mouseout;
           .on("click", function (event, d) {
             const clickedState = dashboardState.selectedState === d.state ? null : d.state; // Toggle state
-            console.log(clickedState);
+            //console.log(clickedState);
             updateCharts({ state: clickedState });
         });
   
     function updateNewScatter({ selectedState, selectedYear, selectedIncidentId }) {
-        console.log("Updating scatter plot with selected state:", selectedIncidentId, selectedState, selectedYear);
+        //console.log("Updating scatter plot with selected state:", selectedIncidentId, selectedState, selectedYear);
      
 
     scatterSvg2.selectAll("circle")
@@ -128,7 +128,7 @@ function sampleData(data, sampleSize) {
         })
         .attr("r", d => {
            const isMatchingID = d.incident_id === selectedIncidentId;
-            console.log(selectedIncidentId);
+            //console.log(selectedIncidentId);
 
             // Increase radius for selected incident
             return isMatchingID ? 6 : 3;
