@@ -1,12 +1,12 @@
 // Function to sample data
-/*function sampleData(data, sampleSize) {
+function sampleData(data, sampleSize) {
     const sampledData = [];
     const step = Math.floor(data.length / sampleSize);
     for (let i = 0; i < data.length; i += step) {
       sampledData.push(data[i]);
     }
     return sampledData;
-  }*/
+  }
   
   // Set up SVG dimensions and margins for scatter plot
   var scatterDimensions = {
@@ -52,8 +52,8 @@
         
     }).filter(d => d.date && gradeOrder.includes(d.rating) && d.state && d.gender); // Ensure valid data
       // Sample the data to reduce its size
-      //const sampleSize = 1000; // Adjust the sample size as needed
-      //const sampledData = sampleData(filteredData, sampleSize);
+      const sampleSize = 1000; // Adjust the sample size as needed
+      const sampledData = sampleData(filteredData, sampleSize);
   
       // Define xScale for date (extending to include 2018)
       const xScale = d3.scaleTime()
@@ -111,7 +111,7 @@
   
       // Initial scatter plot with sampled data
       scatterSvg1.selectAll("circle")
-          .data(filteredData)
+          .data(sampledData)
           .enter()
           .append("circle")
           .attr("class", "chart-element")
@@ -229,7 +229,7 @@
                   updateScatterPlot(yearData, xScaleMonth, xAxisMonth);
                   xAxisLabel.text(`Incident Date ${selectedYear}`);
                   registerChart("scatterPlot", updateScatterPlot(filteredData, xScale, xAxis));
-                  //updateCharts({ year: selectedYear });
+                  updateCharts({ year: selectedYear });
                   //updateCharts({ selectedYear: clickedState, incidentId: clickedIncidentId });
 
 
