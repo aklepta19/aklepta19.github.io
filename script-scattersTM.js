@@ -12,7 +12,7 @@ function sampleData(data, sampleSize) {
   var scatterDimensions = {
     width: 900,
     height: 650,
-    margins: { top: 90, right: 30, bottom: 100, left: 90 }
+    margins: { top: 80, right: 30, bottom: 100, left: 90 }
   };
   
   var scatterWidth = scatterDimensions.width - scatterDimensions.margins.left - scatterDimensions.margins.right;
@@ -52,7 +52,7 @@ function sampleData(data, sampleSize) {
         
     }).filter(d => d.date && gradeOrder.includes(d.rating) && d.state && d.gender); // Ensure valid data
       // Sample the data to reduce its size
-      const sampleSize = 10000; // Adjust the sample size as needed
+      const sampleSize = 1000; // Adjust the sample size as needed
       const sampledData = sampleData(filteredData, sampleSize);
   
       // Define xScale for date (extending to include 2018)
@@ -107,7 +107,7 @@ function sampleData(data, sampleSize) {
           .text("Incident Date");
   
       // Vertical jitter function to add randomness to y positions for visibility
-      const verticalJitter = () => (Math.random() - 0.5) * 32;
+      const verticalJitter = () => (Math.random() - 0.5) * 10;
   
       // Initial scatter plot with sampled data
       scatterSvg1.selectAll("circle")
@@ -119,7 +119,7 @@ function sampleData(data, sampleSize) {
           .attr("cy", d => yScale(d.rating) + verticalJitter())
           .attr("r", 3) // Increase the radius for visibility
           .attr("fill", d => color(d.state))
-          .attr("opacity", 0.3) // more transparent
+          .attr("opacity", 0.7)
           .attr("stroke", "black")
           .attr("stroke-width", 0.3)
           .on("mouseover", showTooltip) // Show tooltip on hover
@@ -146,8 +146,8 @@ function sampleData(data, sampleSize) {
                   )
                   .attr("opacity", c =>
                       (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                          ? .1 // CHANGD THIS
-                          : .3
+                          ? 0.3
+                          : 1
                   )
                   .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
                   .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
@@ -174,7 +174,7 @@ function sampleData(data, sampleSize) {
               .attr("cy", d => yScale(d.rating) + verticalJitter())
               .attr("r", 3)
               .attr("fill", d => color(d.state))
-              .attr("opacity", 0.3)
+              .attr("opacity", 0.7)
               .attr("stroke", "black")
               .attr("stroke-width", 0.3)
               .on("mouseover", showTooltip) // Show tooltip on hover
@@ -200,8 +200,8 @@ function sampleData(data, sampleSize) {
               )
               .attr("opacity", c =>
                   (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                      ? .1
-                      : .3
+                      ? 0.3
+                      : 1
               )
               .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
               .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
@@ -214,10 +214,12 @@ function sampleData(data, sampleSize) {
           scatterSvg1.select(".x-axis").call(xAxis);
   
           // Reattach click event listeners to the x-axis labels
-          scatterSvg1.selectAll(".x-axis text").on("click.toggleView", function(event, d) {
+          /*scatterSvg1.selectAll(".x-axis text").on("click.toggleView", function(event, d) {
               if (isYearlyView) {
                   // Switch to monthly view
                   selectedYear = d.getFullYear();
+                  console.log("selectedYear", selectedYear);
+                  console.log("Current Dashboard Statescat: in first", dashboardState);
                   const yearData = filteredData.filter(item => item.date.getFullYear() === selectedYear);
                   const xScaleMonth = d3.scaleTime()
                       .domain([new Date(selectedYear, 0, 1), new Date(selectedYear, 11, 31)])
@@ -227,37 +229,39 @@ function sampleData(data, sampleSize) {
                       .tickFormat(d3.timeFormat("%b"));
   
                   updateScatterPlot(yearData, xScaleMonth, xAxisMonth);
+                  updateCharts({ year: selectedYear });
+                  console.log("Current Dashboard Statescat: in first", dashboardState);
+
                   xAxisLabel.text(`Incident Date ${selectedYear}`);
                   registerChart("scatterPlot", updateScatterPlot(sampledData, xScale, xAxis));
                   isYearlyView = false;
-                  console.log("isYearlyView", isYearlyView);
+                  //console.log("isYearlyView", isYearlyView);
                   //updateCharts({ year: selectedYear });
                   //updateCharts({ selectedYear: clickedState, incidentId: clickedIncidentId });
 
 
               } else {
                   // Switch back to yearly view
-                  ;
+                  console.log("isYearlyView", isYearlyView);
                   registerChart("scatterPlot", updateScatterPlot(sampledData, xScale, xAxis));
 
                   xAxisLabel.text("Incident Date");
               }
               isYearlyView = true;
-          });
-      }
-  
-      // Add click event to toggle between yearly and monthly views
+          });*/
+          // Add click event to toggle between yearly and monthly views
       scatterSvg1.selectAll(".x-axis text").on("click.toggleView", function(event, d) {
         if (isYearlyView) {
             // Switch to monthly view
             selectedYear = d.getFullYear();
-            console.log("Current Dashboard Statescats: click", dashboardState);
+            console.log("selectedYear", selectedYear);
+            console.log("Current Dashboard Statescats: d", dashboardState);
             // Update the global dashboard state
             updateCharts({ year: selectedYear });
-            console.log("Current Dashboard Statescats: clicky", dashboardState);
+            console.log("Current Dashboard Statescats: 2", dashboardState);
 
     
-            const yearData = filteredData.filter(item => item.date.getFullYear() === selectedYear);
+            const yearData = sampledData.filter(item => item.date.getFullYear() === selectedYear);
             const xScaleMonth = d3.scaleTime()
                 .domain([new Date(selectedYear, 0, 1), new Date(selectedYear, 11, 31)])
                 .range([0, scatterWidth]);
@@ -271,6 +275,42 @@ function sampleData(data, sampleSize) {
         } else {
             // Switch back to yearly view
             updateCharts({ year: null });
+            console.log("Locationhere");
+            isYearlyView = true;
+            updateScatterPlot(sampledData, xScale, xAxis);
+            xAxisLabel.text("Incident Date");
+        }
+       // isYearlyView = true;
+    });
+      }
+  
+      // Add click event to toggle between yearly and monthly views
+      scatterSvg1.selectAll(".x-axis text").on("click.toggleView", function(event, d) {
+        if (isYearlyView) {
+            // Switch to monthly view
+            selectedYear = d.getFullYear();
+            console.log("selectedYear", selectedYear);
+            console.log("Current Dashboard Statescats: d", dashboardState);
+            // Update the global dashboard state
+            updateCharts({ year: selectedYear });
+            console.log("Current Dashboard Statescats: 2", dashboardState);
+
+    
+            const yearData = sampledData.filter(item => item.date.getFullYear() === selectedYear);
+            const xScaleMonth = d3.scaleTime()
+                .domain([new Date(selectedYear, 0, 1), new Date(selectedYear, 11, 31)])
+                .range([0, scatterWidth]);
+            const xAxisMonth = d3.axisBottom(xScaleMonth)
+                .ticks(d3.timeMonth.every(1))
+                .tickFormat(d3.timeFormat("%b"));
+    
+            updateScatterPlot(yearData, xScaleMonth, xAxisMonth);
+            xAxisLabel.text(`Incident Date ${selectedYear}`);
+            isYearlyView = false;
+        } else {
+            // Switch back to yearly view
+            updateCharts({ year: null });
+            console.log("Locationhere");
             isYearlyView = true;
             updateScatterPlot(sampledData, xScale, xAxis);
             xAxisLabel.text("Incident Date");
@@ -281,9 +321,17 @@ function sampleData(data, sampleSize) {
       // Add click event to x-axis label to revert back to yearly view
       xAxisLabel.on("click.toggleView", function() {
           if (!isYearlyView) {
+            console.log("Location");
+
               updateScatterPlot(sampledData, xScale, xAxis);
+              console.log("year in xaxislabel", selectedYear);
               updateCharts({ year: null });
+              selectedYear = null;
+              console.log("year in xaxislabel", selectedYear);
               xAxisLabel.text("Incident Date");
+              console.log("updated", dashboardState);
+              console.log("selcted", selectedYear);
+
               isYearlyView = true;
               console.log("isYearlyView", isYearlyView);
           }
@@ -304,7 +352,7 @@ function sampleData(data, sampleSize) {
                 (selectedState && d.state !== selectedState) || 
                 (selectedIncidentId && d.incidentId !== selectedIncidentId) || 
                 (selectedGender && d.gender !== selectedGender) ? 
-                    0.3 : 0.3 //CHANGED THIS
+                    0.3 : 1
             )
             .attr("r", d => 
                 (selectedIncidentId && d.incidentId === selectedIncidentId) || 
