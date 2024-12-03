@@ -302,7 +302,14 @@ function sampleData(data, sampleSize) {
                 (selectedGender && d.gender !== selectedGender) ? 
                     0.3 : 1
             )
-            
+            .attr("stroke", d => 
+                (selectedIncidentId && d.incidentId === selectedIncidentId) || 
+                (selectedGender && d.gender === selectedGender) ? "black" : "none"
+            )
+            .attr("stroke-width", d => 
+                (selectedIncidentId && d.incidentId === selectedIncidentId) || 
+                (selectedGender && d.gender === selectedGender) ? 2 : 0
+            )
             .attr("r", d => 
                 (selectedIncidentId && d.incidentId === selectedIncidentId) || 
                 (selectedGender && d.gender === selectedGender) ? 5 : 3
