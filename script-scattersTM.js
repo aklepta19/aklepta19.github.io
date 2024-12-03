@@ -146,8 +146,8 @@ function sampleData(data, sampleSize) {
                   )
                   .attr("opacity", c =>
                       (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                          ? .3 // CHANGD THIS
-                          : 1
+                          ? .1 // CHANGD THIS
+                          : .3
                   )
                   .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
                   .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
@@ -200,7 +200,7 @@ function sampleData(data, sampleSize) {
               )
               .attr("opacity", c =>
                   (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                      ? .3
+                      ? .1
                       : .3
               )
               .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
