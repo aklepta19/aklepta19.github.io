@@ -12,7 +12,7 @@ function sampleData(data, sampleSize) {
   var scatterDimensions = {
     width: 900,
     height: 650,
-    margins: { top: 80, right: 30, bottom: 100, left: 90 }
+    margins: { top: 100, right: 30, bottom: 100, left: 90 } // adjusted to account for increased jitter
   };
   
   var scatterWidth = scatterDimensions.width - scatterDimensions.margins.left - scatterDimensions.margins.right;
@@ -107,7 +107,7 @@ function sampleData(data, sampleSize) {
           .text("Incident Date");
   
       // Vertical jitter function to add randomness to y positions for visibility
-      const verticalJitter = () => (Math.random() - 0.5) * 10;
+      const verticalJitter = () => (Math.random() - 0.5) * 32;
   
       // Initial scatter plot with sampled data
       scatterSvg1.selectAll("circle")
@@ -119,7 +119,7 @@ function sampleData(data, sampleSize) {
           .attr("cy", d => yScale(d.rating) + verticalJitter())
           .attr("r", 3) // Increase the radius for visibility
           .attr("fill", d => color(d.state))
-          .attr("opacity", 0.7)
+          .attr("opacity", 0.3)
           .attr("stroke", "black")
           .attr("stroke-width", 0.3)
           .on("mouseover", showTooltip) // Show tooltip on hover
@@ -146,8 +146,8 @@ function sampleData(data, sampleSize) {
                   )
                   .attr("opacity", c =>
                       (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                          ? 0.3
-                          : 1
+                          ? 0.1
+                          : 0.3
                   )
                   .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
                   .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
@@ -174,7 +174,7 @@ function sampleData(data, sampleSize) {
               .attr("cy", d => yScale(d.rating) + verticalJitter())
               .attr("r", 3)
               .attr("fill", d => color(d.state))
-              .attr("opacity", 0.7)
+              .attr("opacity", 0.3)
               .attr("stroke", "black")
               .attr("stroke-width", 0.3)
               .on("mouseover", showTooltip) // Show tooltip on hover
@@ -200,8 +200,8 @@ function sampleData(data, sampleSize) {
               )
               .attr("opacity", c =>
                   (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                      ? 0.3
-                      : 1
+                      ? 0.1
+                      : 0.3
               )
               .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
               .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
@@ -352,7 +352,7 @@ function sampleData(data, sampleSize) {
                 (selectedState && d.state !== selectedState) || 
                 (selectedIncidentId && d.incidentId !== selectedIncidentId) || 
                 (selectedGender && d.gender !== selectedGender) ? 
-                    0.3 : 1
+                    0.1 : 0.3
             )
             .attr("r", d => 
                 (selectedIncidentId && d.incidentId === selectedIncidentId) || 
