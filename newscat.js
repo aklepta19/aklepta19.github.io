@@ -49,7 +49,7 @@ function sampleData(data, sampleSize) {
         const filteredData = data.filter(d => gradeOrder2.includes(d.rating) && d.state && d.incident_id && d.year);
   
       // Sample the data to reduce its size
-      const sampleSize = 10000; // Adjust the sample size as needed
+      const sampleSize = 40000; // Adjust the sample size as needed
       const sampledData = sampleData(filteredData, sampleSize);
   
       // Custom scale to map x values, including a gap between 30 and 90
@@ -85,7 +85,8 @@ function sampleData(data, sampleSize) {
   
       // Vertical jitter for visibility
       const verticalJitter = () => (Math.random() - 0.5) * 32;
-  
+      const horizontalJitter = () => (Math.random() - 0.5) * 10; // Adjust jitter magnitude as needed
+
       // Create scatter plot
       scatterSvg2.selectAll("circle")
           .data(sampledData)
@@ -93,9 +94,9 @@ function sampleData(data, sampleSize) {
           .append("circle")
           .attr("class", "chart-element")
           .attr("cx", d => {
-              const casualties = +d.total_casualties;
-              return xScale(casualties >= 35 && casualties < 100 ? 100 : casualties); // Map values in the gap to 90
-          })
+            const casualties = +d.total_casualties;
+            return xScale(casualties >= 35 && casualties < 100 ? 100 : casualties) + horizontalJitter(); // Add horizontal jitter
+        })
           .attr("cy", d => yScale(d.rating) + verticalJitter())
           .attr("r", 3)
           .attr("fill", d => color(d.state))
@@ -106,10 +107,32 @@ function sampleData(data, sampleSize) {
           .on("mousemove", moveTooltip) // Move tooltip with the pointer
           .on("mouseout", hideTooltip) // Hide tooltip on mouseout;
           .on("click", function (event, d) {
-            const clickedState = dashboardState.selectedState === d.state ? null : d.state; // Toggle state
-            //console.log(clickedState);
-            updateCharts({ state: clickedState });
-        });
+            event.stopPropagation(); // Prevent global click handler from firing
+
+           // Toggle selection
+           const clickedState = dashboardState.selectedState === d.state ? null : d.state;
+           const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
+
+           // Update global state with both `state` and `incidentId`
+           updateCharts({ state: clickedState, incidentId: clickedIncidentId });
+           // Update circle styles based on the selected state and incidentId
+          scatterSvg1.selectAll("circle")
+          .transition()
+          .duration(300)
+          .attr("fill", c =>
+              (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
+                  ? "grey"
+                  : color(c.state)
+          )
+          .attr("opacity", c =>
+              (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
+                  ? 0.1
+                  : 0.3
+          )
+          .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
+          .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 3 : 1))
+          .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3)); // Highlight selected
+  });
   
     function updateNewScatter({ selectedState, selectedYear, selectedIncidentId }) {
         //console.log("Updating scatter plot with selected state:", selectedIncidentId, selectedState, selectedYear);
@@ -134,7 +157,7 @@ function sampleData(data, sampleSize) {
             return isMatchingID ? 6 : 3;
         })
         .attr("stroke", d => (d.incident_id === selectedIncidentId ? "red" : "none"))
-        .attr("stroke-width", d => (d.incident_id === selectedIncidentId ? 2 : 0));
+        .attr("stroke-width", d => (d.incident_id === selectedIncidentId ? 3 : 1));
         
 }
 
@@ -177,6 +200,7 @@ function sampleData(data, sampleSize) {
               tooltip
                   .html(`
                       <strong>Incident ID:</strong> ${d.incident_id}<br>
+                    <strong>Date:</strong> ${d3.timeFormat("%b %d, %Y")(d.date)}<br>
                       <strong>Rating:</strong> ${d.rating}<br>
                       <strong>Casualities:</strong> ${d.total_casualties}<br>
                       <strong>State:</strong> ${d.state}
