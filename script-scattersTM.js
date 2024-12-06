@@ -52,7 +52,7 @@ function sampleData(data, sampleSize) {
         
     }).filter(d => d.date && gradeOrder.includes(d.rating) && d.state && d.gender); // Ensure valid data
       // Sample the data to reduce its size
-      const sampleSize = 40000; // Adjust the sample size as needed
+      const sampleSize = 10000; // Adjust the sample size as needed
       const sampledData = sampleData(filteredData, sampleSize);
   
       // Define xScale for date (extending to include 2018)
