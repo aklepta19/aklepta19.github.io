@@ -134,9 +134,9 @@
                           : color(c.state)
                   )
                   .attr("opacity", c =>
-                      (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
+                      (c.incident_id !== clickedIncidentId)
                           ? 0.1
-                          : 0.3
+                          : 1
                   )
                   .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
                   .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
