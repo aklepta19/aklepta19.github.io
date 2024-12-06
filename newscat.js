@@ -49,7 +49,7 @@ function sampleData(data, sampleSize) {
         const filteredData = data.filter(d => gradeOrder2.includes(d.rating) && d.state && d.incident_id && d.year);
   
       // Sample the data to reduce its size
-      const sampleSize = 50000; // Adjust the sample size as needed
+      const sampleSize = 1000; // Adjust the sample size as needed
       const sampledData = sampleData(filteredData, sampleSize);
   
       // Custom scale to map x values, including a gap between 30 and 90
@@ -89,7 +89,7 @@ function sampleData(data, sampleSize) {
 
       // Create scatter plot
       scatterSvg2.selectAll("circle")
-          .data(sampledData)
+          .data(filteredData)
           .enter()
           .append("circle")
           .attr("class", "chart-element")
@@ -100,38 +100,46 @@ function sampleData(data, sampleSize) {
           .attr("cy", d => yScale(d.rating) + verticalJitter())
           .attr("r", 3)
           .attr("fill", d => color(d.state))
-          .attr("opacity", 0.3)
+          .attr("opacity", 0.1)
           //.attr("stroke", "black")
           //.attr("stroke-width", )
           .on("mouseover", showTooltip) // Show tooltip on hover
           .on("mousemove", moveTooltip) // Move tooltip with the pointer
           .on("mouseout", hideTooltip) // Hide tooltip on mouseout;
           .on("click", function (event, d) {
-            event.stopPropagation(); // Prevent global click handler from firing
+                    event.stopPropagation(); // Prevent global click handler from firing
 
-           // Toggle selection
-           const clickedState = dashboardState.selectedState === d.state ? null : d.state;
-           const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
+                // Toggle selection
+                const clickedState = dashboardState.selectedState === d.state ? null : d.state;
+                const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
 
-           // Update global state with both `state` and `incidentId`
-           updateCharts({ state: clickedState, incidentId: clickedIncidentId });
-           // Update circle styles based on the selected state and incidentId
-          scatterSvg1.selectAll("circle")
-          .transition()
-          .duration(300)
-          .attr("fill", c =>
-              (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                  ? "grey"
-                  : color(c.state)
-          )
-          .attr("opacity", c =>
-              (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                  ? 0.1
-                  : 0.3
-          )
-          //.attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
-          //.attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 3 : 1))
-          .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3)); // Highlight selected
+                // Update global state with both `state` and `incidentId`
+                updateCharts({ state: clickedState, incidentId: clickedIncidentId });
+                // Update circle styles based on the selected state and incidentId
+                scatterSvg1.selectAll("circle")
+                .transition()
+
+                .duration(300)
+                //.attr("fill", c =>
+                //    (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
+                //        ? "grey"
+                //        : color(c.state)
+                //)
+                .attr("fill", c =>
+                    (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
+                        ? "grey"
+                        : color(c.state)
+                )
+                
+                .attr("opacity", c =>
+                    (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
+                        ? 0.05
+                        : 0.1
+                )
+                
+                //.attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
+                //.attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 3 : 1))
+                .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3)); // Highlight selected
   });
   
     function updateNewScatter({ selectedState, selectedYear, selectedIncidentId }) {
@@ -147,7 +155,8 @@ function sampleData(data, sampleSize) {
             const isMatchingID = !selectedIncidentId || d.incident_id === selectedIncidentId;
 
             // Highlight only matching data points
-            return (isMatchingState && isMatchingYear) ? .3 : 0;
+            return (isMatchingState && isMatchingYear) ? .1 : 0;
+
         })
         .attr("r", d => {
            const isMatchingID = d.incident_id === selectedIncidentId;
@@ -156,7 +165,7 @@ function sampleData(data, sampleSize) {
             // Increase radius for selected incident
             return isMatchingID ? 6 : 3;
         })
-        .attr("stroke", d => (d.incident_id === selectedIncidentId ? "red" : "none"))
+        .attr("stroke", d => (d.incident_id === selectedIncidentId ? "black" : "none"))
         .attr("stroke-width", d => (d.incident_id === selectedIncidentId ? 3 : 1));
         
 }

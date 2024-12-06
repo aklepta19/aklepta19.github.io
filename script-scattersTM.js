@@ -1,13 +1,4 @@
-// Function to sample data
-function sampleData(data, sampleSize) {
-    const sampledData = [];
-    const step = Math.floor(data.length / sampleSize);
-    for (let i = 0; i < data.length; i += step) {
-      sampledData.push(data[i]);
-    }
-    return sampledData;
-  }
-  
+
   // Set up SVG dimensions and margins for scatter plot
   var scatterDimensions = {
     width: 900,
@@ -51,14 +42,12 @@ function sampleData(data, sampleSize) {
         };
         
     }).filter(d => d.date && gradeOrder.includes(d.rating) && d.state && d.gender); // Ensure valid data
-      // Sample the data to reduce its size
-      const sampleSize = 50000; // Adjust the sample size as needed
-      const sampledData = sampleData(filteredData, sampleSize);
+
   
       // Define xScale for date (extending to include 2018)
       const xScale = d3.scaleTime()
           .domain([
-              d3.min(sampledData, d => d.date), // Minimum date in the data
+              d3.min(filteredData, d => d.date), // Minimum date in the data
               new Date(2018, 0, 1) // Extend domain to include the end of 2018
           ])
           .range([0, scatterWidth]);
@@ -111,7 +100,7 @@ function sampleData(data, sampleSize) {
   
       // Initial scatter plot with sampled data
       scatterSvg1.selectAll("circle")
-          .data(sampledData)
+          .data(filteredData)
           .enter()
           .append("circle")
           .attr("class", "chart-element")
@@ -203,6 +192,7 @@ function sampleData(data, sampleSize) {
                       ? 0.1
                       : 0.3
               )
+              .attr("opacity", c => (c.incidentId == clickedIncidentId) ? .3 : .1)
               .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
               .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
               .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3)); // Highlight selected
@@ -213,42 +203,6 @@ function sampleData(data, sampleSize) {
           // Update the x-axis
           scatterSvg1.select(".x-axis").call(xAxis);
   
-          // Reattach click event listeners to the x-axis labels
-          /*scatterSvg1.selectAll(".x-axis text").on("click.toggleView", function(event, d) {
-              if (isYearlyView) {
-                  // Switch to monthly view
-                  selectedYear = d.getFullYear();
-                  console.log("selectedYear", selectedYear);
-                  console.log("Current Dashboard Statescat: in first", dashboardState);
-                  const yearData = filteredData.filter(item => item.date.getFullYear() === selectedYear);
-                  const xScaleMonth = d3.scaleTime()
-                      .domain([new Date(selectedYear, 0, 1), new Date(selectedYear, 11, 31)])
-                      .range([0, scatterWidth]);
-                  const xAxisMonth = d3.axisBottom(xScaleMonth)
-                      .ticks(d3.timeMonth.every(1))
-                      .tickFormat(d3.timeFormat("%b"));
-  
-                  updateScatterPlot(yearData, xScaleMonth, xAxisMonth);
-                  updateCharts({ year: selectedYear });
-                  console.log("Current Dashboard Statescat: in first", dashboardState);
-
-                  xAxisLabel.text(`Incident Date ${selectedYear}`);
-                  registerChart("scatterPlot", updateScatterPlot(sampledData, xScale, xAxis));
-                  isYearlyView = false;
-                  //console.log("isYearlyView", isYearlyView);
-                  //updateCharts({ year: selectedYear });
-                  //updateCharts({ selectedYear: clickedState, incidentId: clickedIncidentId });
-
-
-              } else {
-                  // Switch back to yearly view
-                  console.log("isYearlyView", isYearlyView);
-                  registerChart("scatterPlot", updateScatterPlot(sampledData, xScale, xAxis));
-
-                  xAxisLabel.text("Incident Date");
-              }
-              isYearlyView = true;
-          });*/
           // Add click event to toggle between yearly and monthly views
       scatterSvg1.selectAll(".x-axis text").on("click.toggleView", function(event, d) {
         if (isYearlyView) {
@@ -312,7 +266,7 @@ function sampleData(data, sampleSize) {
             updateCharts({ year: null });
             console.log("Locationhere");
             isYearlyView = true;
-            updateScatterPlot(sampledData, xScale, xAxis);
+            updateScatterPlot(filteredData, xScale, xAxis);
             xAxisLabel.text("Incident Date");
         }
        // isYearlyView = true;
@@ -323,7 +277,7 @@ function sampleData(data, sampleSize) {
           if (!isYearlyView) {
             console.log("Location");
 
-              updateScatterPlot(sampledData, xScale, xAxis);
+              updateScatterPlot(filteredData, xScale, xAxis);
               console.log("year in xaxislabel", selectedYear);
               updateCharts({ year: null });
               selectedYear = null;
@@ -357,7 +311,7 @@ function sampleData(data, sampleSize) {
             .attr("r", d => 
                 (selectedIncidentId && d.incidentId === selectedIncidentId) || 
                 (selectedGender && d.gender === selectedGender) ? 5 : 3
-            );
+            )
     }
       
   
