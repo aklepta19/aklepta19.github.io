@@ -141,12 +141,11 @@ d3.csv("suspect_file.csv").then(function(dataset) {
         const allZero = aggregatedData.every(d => d.total_casualties === 0);
 
         if (allZero) {
-            svg.selectAll("rect").remove(); // Remove all bars and elements
-            svg.append("text") // Optional: Display a message if no data
-                .attr("x", (dimensions.width - dimensions.margins.left - dimensions.margins.right) / 2)
-                .attr("y", dimensions.height / 2)
-                .attr("text-anchor", "middle")
-                .style("font-size", "16px")
+            svg.selectAll("rect")
+            .transition()
+            .duration(300)
+            .attr("height", 0) // Collapse bars
+            .attr("y", dimensions.height - dimensions.margins.top - dimensions.margins.bottom); // Move bars to the base
                 //.text("No data available");
             return; // Exit early, so no bars are drawn
         }

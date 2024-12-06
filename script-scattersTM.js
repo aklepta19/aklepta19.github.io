@@ -338,7 +338,7 @@ function sampleData(data, sampleSize) {
       });
   
       
-      function updateScatterPlot2({ selectedState, selectedIncidentId, selectedGender }) {
+    function updateScatterPlot2({ selectedState, selectedIncidentId, selectedGender }) {
         scatterSvg1.selectAll("circle")
             .transition()
             .duration(300)
