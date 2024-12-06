@@ -120,21 +120,26 @@ function sampleData(data, sampleSize) {
                 .transition()
 
                 .duration(300)
-                //.attr("fill", c =>
-                //    (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                //        ? "grey"
-                //        : color(c.state)
-                //)
+                .attr("fill", c =>
+                    (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
+                        ? "grey"
+                        : color(c.state)
+                )
                 .attr("fill", c =>
                     (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
                         ? "grey"
                         : color(c.state)
                 )
                 
-                .attr("opacity", c =>
+                /*.attr("opacity", c =>
                     (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
                         ? 0.05
                         : 0.1
+                )*/
+                .attr("opacity", c =>
+                    (c.incident_id !== clickedIncidentId)
+                        ? 0.1
+                        : 1
                 )
                 
                 //.attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
