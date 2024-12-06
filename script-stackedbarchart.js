@@ -31,7 +31,6 @@ d3.csv("suspect_file.csv").then(function(dataset) {
     });
 
     // Check if all casualties are 0
-    // Check if all casualties are 0
     const allZero = aggregatedData.every(d => d.total_casualties === 0);
 
     // If all values are 0, clear the chart and display nothing
@@ -75,7 +74,7 @@ d3.csv("suspect_file.csv").then(function(dataset) {
         })
         .on("mouseover", showTooltip) // Show tooltip on hover
         .on("mousemove", moveTooltip) // Move tooltip with the pointer
-        .on("mouseout", hideTooltip) // Hide tooltip on mouseout;
+        .on("mouseout", hideTooltip) // Hide tooltip on mouseout
         .on("click", function (event, d) {
             const clickedGender = dashboardState.selectedGender === d.gender ? null : d.gender; // Toggle gender
             updateCharts({ 
