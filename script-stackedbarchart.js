@@ -68,7 +68,11 @@ d3.csv("suspect_file.csv").then(function(dataset) {
         .attr("y", d => yScale(d.total_casualties)) // Height of bars based on casualties
         .attr("height", d => (dimensions.height - dimensions.margins.top - dimensions.margins.bottom) - yScale(d.total_casualties)) // Bar height
         .attr("width", barWidth) // Set the width using bandwidth (adjusted for better spacing)
-        .attr("fill", "green")
+        .attr("fill", d => {
+            if (d.gender === "Male") return "#aec6cf"; // Pastel blue for Male
+            if (d.gender === "Female") return "#ffb6c1"; // Pastel pink for Female
+            return "gray"; // Default fallback
+        })
         .on("mouseover", showTooltip) // Show tooltip on hover
         .on("mousemove", moveTooltip) // Move tooltip with the pointer
         .on("mouseout", hideTooltip) // Hide tooltip on mouseout;
@@ -165,9 +169,16 @@ d3.csv("suspect_file.csv").then(function(dataset) {
             .attr("y", d => yScale(d.total_casualties))
             .attr("height", d => (dimensions.height - dimensions.margins.top - dimensions.margins.bottom) - yScale(d.total_casualties))
             .attr("width", barWidth) // Use the bandwidth for width
-            .attr("fill", d =>
-                (selectedGender && d.gender !== selectedGender) ? "grey" : "blue"
-            )
+            .attr("fill", d => {
+                // If a gender is selected and this bar does not match, make it gray
+                if (selectedGender && d.gender !== selectedGender) {
+                    return "grey";
+                }
+                // Otherwise, keep the original color based on gender
+                if (d.gender === "Male") return "#aec6cf"; // Pastel blue for Male
+                if (d.gender === "Female") return "#ffb6c1"; // Pastel pink for Female
+                return "gray"; // Default fallback
+            })
             .attr("opacity", d =>
                 (selectedGender && d.gender !== selectedGender) ? 0.3 : 1
             );
