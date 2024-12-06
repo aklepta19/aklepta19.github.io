@@ -113,12 +113,13 @@ d3.csv("suspect_file.csv").then(function(dataset) {
         .text("Total Casualties");
 
     // Update function to dynamically adjust bars
-    function updateStacked({ selectedGender, selectedState, selectedIncidentId }) {
+    function updateStacked({ selectedGender, selectedState, selectedIncidentId, selectedYear }) {
         // Recompute totals by gender
         const filteredData = dataset.filter(d => {
             return (
                 (!selectedState || d.state === selectedState) &&
-                (!selectedIncidentId || d.incident_id === selectedIncidentId)
+                (!selectedIncidentId || d.incident_id === selectedIncidentId) &&
+                (!selectedYear || +d.year === +selectedYear)
             );
         });
 
