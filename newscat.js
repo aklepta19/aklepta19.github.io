@@ -101,8 +101,8 @@ function sampleData(data, sampleSize) {
           .attr("r", 3)
           .attr("fill", d => color(d.state))
           .attr("opacity", 0.3)
-          .attr("stroke", "black")
-          .attr("stroke-width", 1)
+          //.attr("stroke", "black")
+          //.attr("stroke-width", )
           .on("mouseover", showTooltip) // Show tooltip on hover
           .on("mousemove", moveTooltip) // Move tooltip with the pointer
           .on("mouseout", hideTooltip) // Hide tooltip on mouseout;
@@ -129,8 +129,8 @@ function sampleData(data, sampleSize) {
                   ? 0.1
                   : 0.3
           )
-          .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
-          .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 3 : 1))
+          //.attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
+          //.attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 3 : 1))
           .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3)); // Highlight selected
   });
   
