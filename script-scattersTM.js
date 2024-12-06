@@ -261,7 +261,7 @@ function sampleData(data, sampleSize) {
             console.log("Current Dashboard Statescats: 2", dashboardState);
 
     
-            const yearData = sampledData.filter(item => item.date.getFullYear() === selectedYear);
+            const yearData = filteredData.filter(item => item.date.getFullYear() === selectedYear); //filtered
             const xScaleMonth = d3.scaleTime()
                 .domain([new Date(selectedYear, 0, 1), new Date(selectedYear, 11, 31)])
                 .range([0, scatterWidth]);
@@ -277,7 +277,7 @@ function sampleData(data, sampleSize) {
             updateCharts({ year: null });
             console.log("Locationhere");
             isYearlyView = true;
-            updateScatterPlot(sampledData, xScale, xAxis);
+            updateScatterPlot(filteredData, xScale, xAxis); //filtered data
             xAxisLabel.text("Incident Date");
         }
        // isYearlyView = true;
@@ -296,7 +296,7 @@ function sampleData(data, sampleSize) {
             console.log("Current Dashboard Statescats: 2", dashboardState);
 
     
-            const yearData = sampledData.filter(item => item.date.getFullYear() === selectedYear);
+            const yearData = filteredData.filter(item => item.date.getFullYear() === selectedYear);
             const xScaleMonth = d3.scaleTime()
                 .domain([new Date(selectedYear, 0, 1), new Date(selectedYear, 11, 31)])
                 .range([0, scatterWidth]);
