@@ -49,7 +49,7 @@ function sampleData(data, sampleSize) {
         const filteredData = data.filter(d => gradeOrder2.includes(d.rating) && d.state && d.incident_id && d.year);
   
       // Sample the data to reduce its size
-      const sampleSize = 10000; // Adjust the sample size as needed
+      const sampleSize = 50000; // Adjust the sample size as needed
       const sampledData = sampleData(filteredData, sampleSize);
   
       // Custom scale to map x values, including a gap between 30 and 90
