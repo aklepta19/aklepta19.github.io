@@ -102,7 +102,7 @@ function sampleData(data, sampleSize) {
           .attr("fill", d => color(d.state))
           .attr("opacity", 0.3)
           .attr("stroke", "black")
-          .attr("stroke-width", 0.3)
+          .attr("stroke-width", 1)
           .on("mouseover", showTooltip) // Show tooltip on hover
           .on("mousemove", moveTooltip) // Move tooltip with the pointer
           .on("mouseout", hideTooltip) // Hide tooltip on mouseout;
@@ -200,7 +200,6 @@ function sampleData(data, sampleSize) {
               tooltip
                   .html(`
                       <strong>Incident ID:</strong> ${d.incident_id}<br>
-                    <strong>Date:</strong> ${d3.timeFormat("%b %d, %Y")(d.date)}<br>
                       <strong>Rating:</strong> ${d.rating}<br>
                       <strong>Casualities:</strong> ${d.total_casualties}<br>
                       <strong>State:</strong> ${d.state}
