@@ -115,33 +115,60 @@
           .on("mousemove", moveTooltip) // Move tooltip with the pointer
           .on("mouseout", hideTooltip) // Hide tooltip on mouseout
           .on("click", function (event, d) {
-               event.stopPropagation(); // Prevent global click handler from firing
-  
-              // Toggle selection
-              const clickedState = dashboardState.selectedState === d.state ? null : d.state;
-              const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
-  
-              // Update global state with both `state` and `incidentId`
-              updateCharts({ state: clickedState, incidentId: clickedIncidentId });
-  
-              // Update circle styles based on the selected state and incidentId
-              scatterSvg1.selectAll("circle")
-                  .transition()
-                  .duration(300)
-                  .attr("fill", c =>
-                      (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                          ? "grey"
-                          : color(c.state)
-                  )
-                  .attr("opacity", c =>
-                      (c.incident_id !== clickedIncidentId)
-                          ? 0.1
-                          : 1
-                  )
-                  .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
-                  .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
-                  .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3)); // Highlight selected
-          });
+            event.stopPropagation();
+        
+            const clickedState = dashboardState.selectedState === d.state ? null : d.state;
+            const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
+        
+            // Update global state
+            updateCharts({ state: clickedState, incidentId: clickedIncidentId });
+        
+            // Update circles in first scatter plot
+            const circles1 = scatterSvg1.selectAll("circle");
+            
+            circles1
+                .transition()
+                .duration(300)
+                .attr("fill", c =>
+                    (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
+                        ? "grey"
+                        : color(c.state)
+                )
+                .attr("opacity", c =>
+                    (c.incident_id !== clickedIncidentId)
+                        ? 0.1
+                        : 1
+                )
+                .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
+                .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
+                .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3));
+        
+            // Bring selected circle to front in first plot
+            circles1.filter(c => c.incident_id === clickedIncidentId)
+                .raise();
+        
+            // Update circles in second scatter plot
+            const circles2 = d3.select("#scatter-plot2")
+                .selectAll("circle");
+            
+            circles2
+                .transition()
+                .duration(300)
+                .attr("opacity", c =>
+                    (c.incident_id === clickedIncidentId)
+                        ? 1
+                        : 0.1
+                )
+                .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
+                .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
+                .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3));
+        
+            // Bring selected circle to front in second plot
+            circles2.filter(c => c.incident_id === clickedIncidentId)
+                .raise();
+        });
+        
+        
   
   
       // Flag to track the current view

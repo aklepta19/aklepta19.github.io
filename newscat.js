@@ -7,7 +7,6 @@ function sampleData(data, sampleSize) {
     }
     return sampledData;
   }
-  
   // Set up SVG dimensions and margins for scatter plot
   var scatterDimensions2 = {
     width: 750,
@@ -89,63 +88,92 @@ function sampleData(data, sampleSize) {
 
       // Create scatter plot
       scatterSvg2.selectAll("circle")
-          .data(filteredData)
-          .enter()
-          .append("circle")
-          .attr("class", "chart-element")
-          .attr("cx", d => {
-            const casualties = +d.total_casualties;
-            return xScale(casualties >= 35 && casualties < 100 ? 100 : casualties) + horizontalJitter(); // Add horizontal jitter
-        })
-          .attr("cy", d => yScale(d.rating) + verticalJitter())
-          .attr("r", 3)
-          .attr("fill", d => color(d.state))
-          .attr("opacity", 0.1)
-          //.attr("stroke", "black")
-          //.attr("stroke-width", )
-          .on("mouseover", showTooltip) // Show tooltip on hover
-          .on("mousemove", moveTooltip) // Move tooltip with the pointer
-          .on("mouseout", hideTooltip) // Hide tooltip on mouseout;
-          .on("click", function (event, d) {
-                    event.stopPropagation(); // Prevent global click handler from firing
+    .data(filteredData)
+    .enter()
+    .append("circle")
+    .attr("class", "chart-element")
+    .attr("cx", d => {
+        const casualties = +d.total_casualties;
+        return xScale(casualties >= 35 && casualties < 100 ? 100 : casualties) + horizontalJitter();
+    })
+    .attr("cy", d => yScale(d.rating) + verticalJitter())
+    .attr("r", 3)
+    .attr("fill", d => color(d.state))
+    .attr("opacity", 0.1)
+    .on("mouseover", showTooltip)
+    .on("mousemove", moveTooltip)
+    .on("mouseout", hideTooltip)
+    .on("click", function(event, d) {
+        event.stopPropagation();
+    
+        // Toggle selection
+        const clickedState = dashboardState.selectedState === d.state ? null : d.state;
+        const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
+    
+        // Update global state
+        updateCharts({ state: clickedState, incidentId: clickedIncidentId });
+    
+        // Update circles in this scatter plot (newscat)
+        const circles2 = scatterSvg2.selectAll("circle");
+        
+        circles2
+            .transition()
+            .duration(300)
+            .attr("fill", c => {
+                // Keep same state points colored, gray out others
+                if (clickedState) {
+                    return c.state === clickedState ? color(c.state) : "grey";
+                }
+                // If no state is selected, use original colors
+                return color(c.state);
+            })
+            .attr("opacity", c =>
+                (c.incident_id !== clickedIncidentId)
+                    ? 0.1
+                    : 1
+            )
+            .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
+            .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
+            .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3));
+    
+        // Bring selected circle to front in this plot
+        circles2.lower();
+        circles2.filter(c => c.incident_id === clickedIncidentId).raise();
+    
+        // Update circles in the other scatter plot
+        const circles1 = scatterSvg1.selectAll("circle");
+        
+        circles1
+            .transition()
+            .duration(300)
+            .attr("fill", c => {
+                // Keep same state points colored, gray out others
+                if (clickedState) {
+                    return c.state === clickedState ? color(c.state) : "grey";
+                }
+                // If no state is selected, use original colors
+                return color(c.state);
+            })
+            .attr("opacity", c =>
+                (c.incident_id !== clickedIncidentId)
+                    ? 0.1
+                    : 1
+            )
+            .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
+            .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
+            .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3));
+    
+        // Bring selected circle to front in other plot
+        circles1.lower();
+        circles1.filter(c => c.incident_id === clickedIncidentId).raise();
+    });
 
-                // Toggle selection
-                const clickedState = dashboardState.selectedState === d.state ? null : d.state;
-                const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
-
-                // Update global state with both `state` and `incidentId`
-                updateCharts({ state: clickedState, incidentId: clickedIncidentId });
-                // Update circle styles based on the selected state and incidentId
-                scatterSvg1.selectAll("circle")
-                .transition()
-
-                .duration(300)
-                .attr("fill", c =>
-                    (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                        ? "grey"
-                        : color(c.state)
-                )
-                .attr("fill", c =>
-                    (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                        ? "grey"
-                        : color(c.state)
-                )
-                
-                /*.attr("opacity", c =>
-                    (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                        ? 0.05
-                        : 0.1
-                )*/
-                .attr("opacity", c =>
-                    (c.incident_id !== clickedIncidentId)
-                        ? 0.1
-                        : 1
-                )
-                
-                //.attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
-                //.attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 3 : 1))
-                .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3)); // Highlight selected
-  });
+// Add background click handler to reset selection
+scatterSvg2.on("click", function(event) {
+    if (event.target === this) {
+        updateCharts({ state: null, incidentId: null });
+    }
+});
   
     function updateNewScatter({ selectedState, selectedYear, selectedIncidentId }) {
         //console.log("Updating scatter plot with selected state:", selectedIncidentId, selectedState, selectedYear);
