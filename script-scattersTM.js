@@ -25,24 +25,27 @@
   
   // Load and process data
   d3.csv("gun_data_with_rating.csv").then(data => {
-      // Format and filter the data
-      // Format and filter the data
+
     const filteredData = data.map(d => {
         const genderField = d.participant_gender 
             ? d.participant_gender.split("||").find(g => g.startsWith("0::")) 
             : null;
-        const suspectGender = genderField ? genderField.split("::")[1] : null; // Extract gender of participant zero
-    
-        return {
+        const suspectGender = genderField ? genderField.split("::")[1] : null;
+        
+        const processed = {
             date: parseDate(d.date),
             rating: d.rating,
             state: d.state,
             incident_id: d.incident_id,
-            gender: suspectGender // Assign only the suspect's gender
+            gender: suspectGender
         };
         
-    }).filter(d => d.date && gradeOrder.includes(d.rating) && d.state && d.gender); // Ensure valid data
-
+        return processed;
+        
+    }).filter(d => {
+        const isValid = d.date && gradeOrder.includes(d.rating) && d.state && d.gender;
+        return isValid;
+    });
   
       // Define xScale for date (extending to include 2018)
       const xScale = d3.scaleTime()
@@ -114,156 +117,240 @@
           .on("mouseover", showTooltip) // Show tooltip on hover
           .on("mousemove", moveTooltip) // Move tooltip with the pointer
           .on("mouseout", hideTooltip) // Hide tooltip on mouseout
-          .on("click", function (event, d) {
+          .on("click", function(event, d) {
             event.stopPropagation();
         
-            const clickedState = dashboardState.selectedState === d.state ? null : d.state;
+            // Toggle only the incident ID
             const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
         
-            // Update global state
-            updateCharts({ state: clickedState, incidentId: clickedIncidentId });
+            // Update global state while preserving current selections
+            updateCharts({ 
+                state: dashboardState.selectedState,  // Preserve current state
+                incidentId: clickedIncidentId,
+                year: dashboardState.selectedYear,  // Preserve year filter
+                gender: dashboardState.selectedGender // Preserve gender filter
+            });
         
-            // Update circles in first scatter plot
+            // Update circles in both scatter plots
             const circles1 = scatterSvg1.selectAll("circle");
+            const circles2 = scatterSvg2.selectAll("circle");
             
-            circles1
-                .transition()
-                .duration(300)
-                .attr("fill", c =>
-                    (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                        ? "grey"
-                        : color(c.state)
-                )
-                .attr("opacity", c =>
-                    (c.incident_id !== clickedIncidentId)
-                        ? 0.1
-                        : 1
-                )
-                .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
-                .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
-                .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3));
+            // Function to update circles - reusable for both plots
+            const updateCircles = (selection) => {
+                selection
+                    .transition()
+                    .duration(300)
+                    .attr("fill", c => {
+                        // If there's a selected incident (either from click or filter)
+                        if (dashboardState.selectedIncidentId) {
+                            return c.incident_id === dashboardState.selectedIncidentId ? color(c.state) : "grey";
+                        }
+                        // If no incident is selected, return to original colors
+                        return color(c.state);
+                    })
+                    .attr("opacity", c => {
+                        const isMatchingYear = !dashboardState.selectedYear || c.year === dashboardState.selectedYear;
+                        
+                        if (!dashboardState.selectedIncidentId) {
+                            // Base opacity when no point is selected
+                            if (!isMatchingYear) return 0.05;
+                            return 0.3;
+                        }
+                        // Selected incident handling
+                        if (c.incident_id === dashboardState.selectedIncidentId) return 1;
+                        if (!isMatchingYear) return 0.05;
+                        return 0.1;
+                    })
+                    .attr("stroke", c => (dashboardState.selectedIncidentId && 
+                                         c.incident_id === dashboardState.selectedIncidentId ? "black" : "none"))
+                    .attr("stroke-width", c => (dashboardState.selectedIncidentId && 
+                                              c.incident_id === dashboardState.selectedIncidentId ? 2 : 0))
+                    .attr("r", c => {
+                        if (dashboardState.selectedIncidentId && 
+                            c.incident_id === dashboardState.selectedIncidentId) return 5;
+                        if (dashboardState.selectedYear && c.year === dashboardState.selectedYear) return 4;
+                        return 3;
+                    });
+            };
         
-            // Bring selected circle to front in first plot
-            circles1.filter(c => c.incident_id === clickedIncidentId)
-                .raise();
+            // Apply updates to both plots
+            updateCircles(circles1);
+            updateCircles(circles2);
         
-            // Update circles in second scatter plot
-            const circles2 = d3.select("#scatter-plot2")
-                .selectAll("circle");
-            
-            circles2
-                .transition()
-                .duration(300)
-                .attr("opacity", c =>
-                    (c.incident_id === clickedIncidentId)
-                        ? 1
-                        : 0.1
-                )
-                .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
-                .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
-                .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3));
-        
-            // Bring selected circle to front in second plot
-            circles2.filter(c => c.incident_id === clickedIncidentId)
-                .raise();
+            // Reset z-index for all circles and bring selected ones to front
+            circles1.lower();
+            circles2.lower();
+            if (dashboardState.selectedIncidentId) {
+                circles1.filter(c => c.incident_id === dashboardState.selectedIncidentId).raise();
+                circles2.filter(c => c.incident_id === dashboardState.selectedIncidentId).raise();
+            }
         });
         
-        
-  
-  
+    
       // Flag to track the current view
       let isYearlyView = true;
       let selectedYear = null;
   
       // Function to update the scatter plot with new data
       function updateScatterPlot(data, xScale, xAxis) {
-          // Remove existing circles
-          scatterSvg1.selectAll("circle").remove();
-  
-          // Add new circles for the updated data
-          scatterSvg1.selectAll("circle")
-              .data(data)
-              .enter()
-              .append("circle")
-              .attr("class", "chart-element")
-              .attr("cx", d => xScale(d.date))
-              .attr("cy", d => yScale(d.rating) + verticalJitter())
-              .attr("r", 3)
-              .attr("fill", d => color(d.state))
-              .attr("opacity", 0.3)
-              .attr("stroke", "black")
-              .attr("stroke-width", 0.3)
-              .on("mouseover", showTooltip) // Show tooltip on hover
-              .on("mousemove", moveTooltip) // Move tooltip with the pointer
-              .on("mouseout", hideTooltip) // Hide tooltip on mouseout;
-              .on("click", function (event, d) {
-                event.stopPropagation(); // Prevent global click handler from firing
-   
-               // Toggle selection
-               const clickedState = dashboardState.selectedState === d.state ? null : d.state;
-               const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
-   
-               // Update global state with both `state` and `incidentId`
-               updateCharts({ state: clickedState, incidentId: clickedIncidentId });
-               // Update circle styles based on the selected state and incidentId
-              scatterSvg1.selectAll("circle")
-              .transition()
-              .duration(300)
-              .attr("fill", c =>
-                  (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                      ? "grey"
-                      : color(c.state)
-              )
-              .attr("opacity", c =>
-                  (clickedState && c.state !== clickedState) || (clickedIncidentId && c.incident_id !== clickedIncidentId)
-                      ? 0.1
-                      : 0.3
-              )
-              .attr("opacity", c => (c.incidentId == clickedIncidentId) ? .3 : .1)
-              .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
-              .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
-              .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3)); // Highlight selected
-      }
-      
-    );
+        // Remove existing circles
+        scatterSvg1.selectAll("circle").remove();
+    
+        // Add new circles for the updated data
+        scatterSvg1.selectAll("circle")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("class", "chart-element")
+            .attr("cx", d => xScale(d.date))
+            .attr("cy", d => yScale(d.rating) + verticalJitter())
+            .attr("r", 3)
+            .attr("fill", d => color(d.state))
+            .attr("opacity", 0.3)  // Set initial opacity to 0.6
+            .attr("stroke", "black")
+            .attr("stroke-width", 0.3)
+            .on("mouseover", showTooltip)
+            .on("mousemove", moveTooltip)
+            .on("mouseout", hideTooltip)
+            .on("click", function(event, d) {
+    event.stopPropagation();
 
-          // Update the x-axis
-          scatterSvg1.select(".x-axis").call(xAxis);
+    // Toggle only the incident ID
+    const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
+
+    // Update global state while preserving current selections
+    updateCharts({ 
+        state: dashboardState.selectedState,  // Preserve current state
+        incidentId: clickedIncidentId,
+        year: dashboardState.selectedYear,  // Preserve year filter
+        gender: dashboardState.selectedGender // Preserve gender filter
+    });
+
+    // Update circles in both scatter plots
+    const circles1 = scatterSvg1.selectAll("circle");
+    const circles2 = scatterSvg2.selectAll("circle");
+    
+    // Function to update circles - reusable for both plots
+    const updateCircles = (selection) => {
+        selection
+            .transition()
+            .duration(300)
+            .attr("fill", c => {
+                // If a point is selected, only that point keeps its color
+                if (clickedIncidentId) {
+                    return c.incident_id === clickedIncidentId ? color(c.state) : "grey";
+                }
+                // If no point is selected, return to original colors
+                return color(c.state);
+            })
+            .attr("opacity", c => {
+                const isMatchingYear = !dashboardState.selectedYear || c.year === dashboardState.selectedYear;
+                
+                if (!clickedIncidentId) {
+                    // Base opacity when no point is selected
+                    if (!isMatchingYear) return 0.05;
+                    return 0.3;
+                }
+                // Selected incident handling
+                if (c.incident_id === clickedIncidentId) return 1;
+                if (!isMatchingYear) return 0.05;
+                return 0.1;
+            })
+            .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
+            .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
+            .attr("r", c => {
+                if (clickedIncidentId && c.incident_id === clickedIncidentId) return 5;
+                if (dashboardState.selectedYear && c.year === dashboardState.selectedYear) return 4;
+                return 3;
+            });
+    };
+
+    // Apply updates to both plots
+    updateCircles(circles1);
+    updateCircles(circles2);
+
+    // Reset z-index for all circles and bring selected ones to front
+    circles1.lower();
+    circles2.lower();
+    if (clickedIncidentId) {
+        circles1.filter(c => c.incident_id === clickedIncidentId).raise();
+        circles2.filter(c => c.incident_id === clickedIncidentId).raise();
+    }
+});
+    
+        // Update the x-axis
+        scatterSvg1.select(".x-axis").call(xAxis);
   
           // Add click event to toggle between yearly and monthly views
-      scatterSvg1.selectAll(".x-axis text").on("click.toggleView", function(event, d) {
-        if (isYearlyView) {
-            // Switch to monthly view
-            selectedYear = d.getFullYear();
-            console.log("selectedYear", selectedYear);
-            console.log("Current Dashboard Statescats: d", dashboardState);
-            // Update the global dashboard state
-            updateCharts({ year: selectedYear });
-            console.log("Current Dashboard Statescats: 2", dashboardState);
+     // Add click event to toggle between yearly and monthly views
+scatterSvg1.selectAll(".x-axis text").on("click.toggleView", function(event, d) {
+    if (isYearlyView) {
+        // Switch to monthly view
+        selectedYear = d.getFullYear();
+        console.log("selectedYear", selectedYear);
+        console.log("Current Dashboard Statescats: d", dashboardState);
+        // Update the global dashboard state
+        updateCharts({ 
+            year: selectedYear,
+            state: dashboardState.selectedState,        // Preserve current state
+            incidentId: dashboardState.selectedIncidentId,
+            gender: dashboardState.selectedGender  // Preserve selected incident
+        });
+        console.log("Current Dashboard Statescats: 2", dashboardState);
 
-    
-            const yearData = filteredData.filter(item => item.date.getFullYear() === selectedYear); //filtered
-            const xScaleMonth = d3.scaleTime()
-                .domain([new Date(selectedYear, 0, 1), new Date(selectedYear, 11, 31)])
-                .range([0, scatterWidth]);
-            const xAxisMonth = d3.axisBottom(xScaleMonth)
-                .ticks(d3.timeMonth.every(1))
-                .tickFormat(d3.timeFormat("%b"));
-    
-            updateScatterPlot(yearData, xScaleMonth, xAxisMonth);
-            xAxisLabel.text(`Incident Date ${selectedYear}`);
-            isYearlyView = false;
-        } else {
-            // Switch back to yearly view
-            updateCharts({ year: null });
-            console.log("Locationhere");
-            isYearlyView = true;
-            updateScatterPlot(filteredData, xScale, xAxis); //filtered data
-            xAxisLabel.text("Incident Date");
+        const yearData = filteredData.filter(item => item.date.getFullYear() === selectedYear);
+        const xScaleMonth = d3.scaleTime()
+            .domain([new Date(selectedYear, 0, 1), new Date(selectedYear, 11, 31)])
+            .range([0, scatterWidth]);
+        const xAxisMonth = d3.axisBottom(xScaleMonth)
+            .ticks(d3.timeMonth.every(1))
+            .tickFormat(d3.timeFormat("%b"));
+
+        updateScatterPlot(yearData, xScaleMonth, xAxisMonth);
+        xAxisLabel.text(`Incident Date ${selectedYear}`);
+        isYearlyView = false;
+    } else {
+        // Switch back to yearly view
+        updateCharts({ 
+            year: null,
+            state: dashboardState.selectedState,        // Preserve current state
+            incidentId: dashboardState.selectedIncidentId  // Preserve selected incident
+        });
+        console.log("Locationhere");
+        isYearlyView = true;
+        updateScatterPlot(filteredData, xScale, xAxis);
+        xAxisLabel.text("Incident Date");
+
+        // Re-apply opacity to selected points after reverting to yearly view
+        scatterSvg1.selectAll("circle")
+            .transition()
+            .duration(300)
+            .attr("opacity", c => {
+                if (dashboardState.selectedIncidentId && c.incident_id === dashboardState.selectedIncidentId) {
+                    return 1; // Selected incident is fully opaque
+                } else if (!dashboardState.selectedState || c.state === dashboardState.selectedState) {
+                    return 0.6; // Matching state points are more visible
+                } else {
+                    return 0.1; // Non-matching points are faded
+                }
+            })
+            .attr("fill", c =>
+                (dashboardState.selectedState && c.state !== dashboardState.selectedState) || 
+                (dashboardState.selectedIncidentId && c.incident_id !== dashboardState.selectedIncidentId)
+                    ? "grey"
+                    : color(c.state)
+            )
+            .attr("stroke", c => (dashboardState.selectedIncidentId && c.incident_id === dashboardState.selectedIncidentId ? "black" : "none"))
+            .attr("stroke-width", c => (dashboardState.selectedIncidentId && c.incident_id === dashboardState.selectedIncidentId ? 2 : 0))
+            .attr("r", c => (dashboardState.selectedIncidentId && c.incident_id === dashboardState.selectedIncidentId ? 5 : 3));
+
+        // Bring selected circles to front
+        scatterSvg1.selectAll("circle")
+            .filter(c => c.incident_id === dashboardState.selectedIncidentId)
+            .raise();
         }
-       // isYearlyView = true;
     });
-      }
+}
   
       // Add click event to toggle between yearly and monthly views
       scatterSvg1.selectAll(".x-axis text").on("click.toggleView", function(event, d) {
@@ -273,7 +360,12 @@
             console.log("selectedYear", selectedYear);
             console.log("Current Dashboard Statescats: d", dashboardState);
             // Update the global dashboard state
-            updateCharts({ year: selectedYear });
+            updateCharts({ 
+                year: null,
+                state: dashboardState.selectedState,        // Preserve current state
+                incidentId: dashboardState.selectedIncidentId,
+                gender: dashboardState.selectedGender  // Preserve selected incident
+            });
             console.log("Current Dashboard Statescats: 2", dashboardState);
 
     

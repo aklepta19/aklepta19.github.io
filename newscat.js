@@ -1,12 +1,4 @@
 // Function to sample data
-function sampleData(data, sampleSize) {
-    const sampledData = [];
-    const step = Math.floor(data.length / sampleSize);
-    for (let i = 0; i < data.length; i += step) {
-      sampledData.push(data[i]);
-    }
-    return sampledData;
-  }
   // Set up SVG dimensions and margins for scatter plot
   var scatterDimensions2 = {
     width: 750,
@@ -32,24 +24,33 @@ function sampleData(data, sampleSize) {
   
   // Load and process data
   d3.csv("gun_data_with_rating.csv").then(data => {
-      // Filter valid grades and format data
-      //const filteredData = data.filter(d => gradeOrder2.includes(d.rating) && d.state && d.incident_id);
-        // Parse year from date or ensure it exists
-        data.forEach(d => {
-            // Parse the year from the date column if it exists
-            if (d.date) {
-                const parsedDate = new Date(d.date);
-                d.year = isNaN(parsedDate) ? null : parsedDate.getFullYear();
-            } else {
-                // Otherwise, ensure year is treated as a number
-                d.year = +d.year || null;
-            }
+    // Filter valid grades and format data
+    const filteredData = data.map(d => {
+        const genderField = d.participant_gender 
+            ? d.participant_gender.split("||").find(g => g.startsWith("0::")) 
+            : null;
+        const suspectGender = genderField ? genderField.split("::")[1] : null;
+        
+        // Ensure total_casualties is a number
+        const casualties = d.total_casualties ? +d.total_casualties : 0;
+        
+        return {
+            date: parseDate(d.date),
+            rating: d.rating,
+            state: d.state,
+            incident_id: d.incident_id,
+            gender: suspectGender,
+            total_casualties: casualties,  // Add this field
+            year: +d.year
+        };
+            
+            return processed;
+            
+        }).filter(d => {
+            const isValid = d.date && gradeOrder.includes(d.rating) && d.state && d.gender;
+            return isValid;
         });
-        const filteredData = data.filter(d => gradeOrder2.includes(d.rating) && d.state && d.incident_id && d.year);
-  
-      // Sample the data to reduce its size
-      const sampleSize = 1000; // Adjust the sample size as needed
-      const sampledData = sampleData(filteredData, sampleSize);
+
   
       // Custom scale to map x values, including a gap between 30 and 90
       const xScale = d3.scaleLinear()
@@ -88,119 +89,140 @@ function sampleData(data, sampleSize) {
 
       // Create scatter plot
       scatterSvg2.selectAll("circle")
-    .data(filteredData)
-    .enter()
-    .append("circle")
-    .attr("class", "chart-element")
-    .attr("cx", d => {
-        const casualties = +d.total_casualties;
-        return xScale(casualties >= 35 && casualties < 100 ? 100 : casualties) + horizontalJitter();
-    })
-    .attr("cy", d => yScale(d.rating) + verticalJitter())
-    .attr("r", 3)
-    .attr("fill", d => color(d.state))
-    .attr("opacity", 0.1)
-    .on("mouseover", showTooltip)
-    .on("mousemove", moveTooltip)
-    .on("mouseout", hideTooltip)
-    .on("click", function(event, d) {
-        event.stopPropagation();
-    
-        // Toggle selection
-        const clickedState = dashboardState.selectedState === d.state ? null : d.state;
-        const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
-    
-        // Update global state
-        updateCharts({ state: clickedState, incidentId: clickedIncidentId });
-    
-        // Update circles in this scatter plot (newscat)
-        const circles2 = scatterSvg2.selectAll("circle");
+        .data(filteredData)
+        .enter()
+        .append("circle")
+        .attr("class", "chart-element")
+        .attr("cx", d => {
+            const casualties = d.total_casualties;
+            // Add safety check for NaN
+            if (isNaN(casualties)) {
+                console.log("NaN casualties for:", d);
+                return 0;
+            }
+            return xScale(casualties >= 35 && casualties < 100 ? 100 : casualties) + horizontalJitter();
+        })
+        .attr("cy", d => yScale(d.rating) + verticalJitter())
+        .attr("r", 3)
+        .attr("fill", d => color(d.state))
+        .attr("opacity", 0.1)
+        .on("mouseover", showTooltip)
+        .on("mousemove", moveTooltip)
+        .on("mouseout", hideTooltip)
+        .on("click", function(event, d) {
+            event.stopPropagation();
         
-        circles2
-            .transition()
-            .duration(300)
-            .attr("fill", c => {
-                // Keep same state points colored, gray out others
-                if (clickedState) {
-                    return c.state === clickedState ? color(c.state) : "grey";
-                }
-                // If no state is selected, use original colors
-                return color(c.state);
-            })
-            .attr("opacity", c =>
-                (c.incident_id !== clickedIncidentId)
-                    ? 0.1
-                    : 1
-            )
-            .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
-            .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
-            .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3));
-    
-        // Bring selected circle to front in this plot
-        circles2.lower();
-        circles2.filter(c => c.incident_id === clickedIncidentId).raise();
-    
-        // Update circles in the other scatter plot
-        const circles1 = scatterSvg1.selectAll("circle");
+            // Toggle only the incident ID
+            const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
         
-        circles1
-            .transition()
-            .duration(300)
-            .attr("fill", c => {
-                // Keep same state points colored, gray out others
-                if (clickedState) {
-                    return c.state === clickedState ? color(c.state) : "grey";
-                }
-                // If no state is selected, use original colors
-                return color(c.state);
-            })
-            .attr("opacity", c =>
-                (c.incident_id !== clickedIncidentId)
-                    ? 0.1
-                    : 1
-            )
-            .attr("stroke", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? "black" : "none"))
-            .attr("stroke-width", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 2 : 0))
-            .attr("r", c => (clickedIncidentId && c.incident_id === clickedIncidentId ? 5 : 3));
-    
-        // Bring selected circle to front in other plot
-        circles1.lower();
-        circles1.filter(c => c.incident_id === clickedIncidentId).raise();
-    });
-
-// Add background click handler to reset selection
-scatterSvg2.on("click", function(event) {
-    if (event.target === this) {
-        updateCharts({ state: null, incidentId: null });
-    }
-});
+            // Update global state while preserving current selections
+            updateCharts({ 
+                state: dashboardState.selectedState,  // Preserve current state
+                incidentId: clickedIncidentId,
+                year: dashboardState.selectedYear,  // Preserve year filter
+                gender: dashboardState.selectedGender // Preserve gender filter
+            });
+        
+            // Update circles in both scatter plots
+            const circles1 = scatterSvg1.selectAll("circle");
+            const circles2 = scatterSvg2.selectAll("circle");
+            
+            // Function to update circles - reusable for both plots
+            const updateCircles = (selection) => {
+                selection
+                    .transition()
+                    .duration(300)
+                    .attr("fill", c => {
+                        // If there's a selected incident (either from click or filter)
+                        if (dashboardState.selectedIncidentId) {
+                            return c.incident_id === dashboardState.selectedIncidentId ? color(c.state) : "grey";
+                        }
+                        // If no incident is selected, return to original colors
+                        return color(c.state);
+                    })
+                    .attr("opacity", c => {
+                        const isMatchingYear = !dashboardState.selectedYear || c.year === dashboardState.selectedYear;
+                        
+                        if (!dashboardState.selectedIncidentId) {
+                            // Base opacity when no point is selected
+                            if (!isMatchingYear) return 0.05;
+                            return 0.3;
+                        }
+                        // Selected incident handling
+                        if (c.incident_id === dashboardState.selectedIncidentId) return 1;
+                        if (!isMatchingYear) return 0.05;
+                        return 0.1;
+                    })
+                    .attr("stroke", c => (dashboardState.selectedIncidentId && 
+                                         c.incident_id === dashboardState.selectedIncidentId ? "black" : "none"))
+                    .attr("stroke-width", c => (dashboardState.selectedIncidentId && 
+                                              c.incident_id === dashboardState.selectedIncidentId ? 2 : 0))
+                    .attr("r", c => {
+                        if (dashboardState.selectedIncidentId && 
+                            c.incident_id === dashboardState.selectedIncidentId) return 5;
+                        if (dashboardState.selectedYear && c.year === dashboardState.selectedYear) return 4;
+                        return 3;
+                    });
+            };
+        
+            // Apply updates to both plots
+            updateCircles(circles1);
+            updateCircles(circles2);
+        
+            // Reset z-index for all circles and bring selected ones to front
+            circles1.lower();
+            circles2.lower();
+            if (dashboardState.selectedIncidentId) {
+                circles1.filter(c => c.incident_id === dashboardState.selectedIncidentId).raise();
+                circles2.filter(c => c.incident_id === dashboardState.selectedIncidentId).raise();
+            }
+        });
   
-    function updateNewScatter({ selectedState, selectedYear, selectedIncidentId }) {
-        //console.log("Updating scatter plot with selected state:", selectedIncidentId, selectedState, selectedYear);
-     
-
+function updateNewScatter({ selectedState, selectedIncidentId, selectedYear, selectedGender }) {
     scatterSvg2.selectAll("circle")
         .transition()
         .duration(300)
         .attr("opacity", d => {
             const isMatchingState = !selectedState || d.state === selectedState;
             const isMatchingYear = !selectedYear || d.year === selectedYear;
-            const isMatchingID = !selectedIncidentId || d.incident_id === selectedIncidentId;
+            const isMatchingGender = !selectedGender || d.gender === selectedGender;
 
-            // Highlight only matching data points
-            return (isMatchingState && isMatchingYear) ? .1 : 0;
+            // When no filters are active, show all points with base opacity
+            if (!selectedState && !selectedYear && !selectedGender && !selectedIncidentId) {
+                return 0.1;
+            }
 
+            // Selected incident gets full opacity
+            if (selectedIncidentId && d.incident_id === selectedIncidentId) {
+                return 1;
+            }
+
+            // If point doesn't match active filters, make it very faint but not invisible
+            if (!isMatchingYear || !isMatchingGender || !isMatchingState) {
+                return 0;
+            }
+
+            // Matching points get medium opacity
+            return 0.3;
         })
         .attr("r", d => {
-           const isMatchingID = d.incident_id === selectedIncidentId;
-            //console.log(selectedIncidentId);
-
-            // Increase radius for selected incident
-            return isMatchingID ? 6 : 3;
+            // If there's a selected incident, it gets the largest radius
+            if (selectedIncidentId && d.incident_id === selectedIncidentId) {
+                return 6;
+            }
+            // If there's a gender filter and this point matches, make it larger
+            if (selectedGender && d.gender === selectedGender) {
+                return 4;
+            }
+            // Default size for other points
+            return 3;
         })
-        .attr("stroke", d => (d.incident_id === selectedIncidentId ? "black" : "none"))
-        .attr("stroke-width", d => (d.incident_id === selectedIncidentId ? 3 : 1));
-        
+        .attr("fill", d => {
+            if (selectedState) {
+                return d.state === selectedState ? color(d.state) : "grey";
+            }
+            return color(d.state);
+        });
 }
 
     
