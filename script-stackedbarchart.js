@@ -17,7 +17,7 @@ d3.csv("suspect_file.csv").then(function(dataset) {
                 .attr("transform", "translate(" + dimensions.margins.left + "," + dimensions.margins.top + ")");
 
     // Fixed categories for gender (or any other variable)
-    const categories = ["Male", "Female", "Other", "Unknown"];
+    const categories = ["Male", "Female"];
 
     // Aggregate the data based on the fixed categories
     const aggregatedData = categories.map(category => {
