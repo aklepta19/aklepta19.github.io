@@ -2,7 +2,7 @@
 var dimensions = {
     width: 900,
     height: 300,
-    margins: { top: 40, right: 40, bottom: 50, left: 40 }
+    margins: { top: 40, right: 40, bottom: 50, left: 60 }
 };
 
 var width = dimensions.width - dimensions.margins.left - dimensions.margins.right;
@@ -84,6 +84,7 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
     var y = d3.scaleLinear()
         .domain([0, d3.max(aggregatedData, d => d.casualties)/1000])
         .range([height, 0]);
+        
 
     // X-axis
     svg.append("g")
@@ -110,7 +111,7 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
     svg.append("text")
         .attr("class", "y-axis-label")
         .attr("transform", "rotate(-90)")
-        .attr("y", -40)
+        .attr("y", -60)
         .attr("x", -height / 2)
         .attr("dy", "1em")
         .style("text-anchor", "middle")
