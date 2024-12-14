@@ -122,15 +122,17 @@
         
             // Toggle only the incident ID
             const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
+
             const clickedState = dashboardState.selectedIncidentId ? null : 
                      (dashboardState.selectedState === d.state ? null : d.state);
+
 
             //const clickedState = dashboardState.selectedState === d.state ? null : d.state;
             // Update global state while preserving current selections
             updateCharts({ 
                 state: clickedState,  // Preserve current state
                 incidentId: clickedIncidentId,
-                year: dashboardState.selectedYear,  // Preserve year filter
+                year: dashboardState.clickedYear,  // Preserve year filter
                 gender: dashboardState.selectedGender // Preserve gender filter
             });
         

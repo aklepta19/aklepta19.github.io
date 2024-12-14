@@ -20,7 +20,7 @@ d3.csv("suspect_file.csv").then(function(dataset) {
     const categories = ["Male", "Female"];
 
     // Aggregate the data based on the fixed categories
-    const aggregatedData = categories.map(category => {
+    /*const aggregatedData = categories.map(category => {
         const totalCasualties = dataset
             .filter(d => d.participant_gender && d.participant_gender.toLowerCase() === category.toLowerCase())
             .reduce((sum, d) => sum + (+d.total_casualties || 0), 0);
@@ -28,8 +28,27 @@ d3.csv("suspect_file.csv").then(function(dataset) {
             gender: category,
             total_casualties: totalCasualties
         };
-    });
+    });*/
+    // Aggregate the data based on the fixed categories and group by state
+    const aggregatedData = categories.map(category => {
+        const totalCasualtiesByState = dataset
+            .filter(d => d.participant_gender && d.participant_gender.toLowerCase() === category.toLowerCase())
+            .reduce((acc, d) => {
+                const state = d.state; // Assuming the state column is named 'state'
+                acc[state] = acc[state] || 0;
+                acc[state] += (+d.total_casualties || 0);
+                return acc;
+            }, {});
 
+        // Convert the state-to-casualty mapping into an array of objects
+        const stateData = Object.keys(totalCasualtiesByState).map(state => ({
+            gender: category,
+            state: state,
+            total_casualties: totalCasualtiesByState[state]
+        }));
+
+        return stateData;
+    }).flat();
     // Check if all casualties are 0
     // Check if all casualties are 0
     const allZero = aggregatedData.every(d => d.total_casualties === 0);
