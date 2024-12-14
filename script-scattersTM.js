@@ -222,10 +222,13 @@
 
     // Toggle only the incident ID
     const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
+    
+    const clickedState = dashboardState.selectedIncidentId ? null : 
+    (dashboardState.selectedState === d.state ? null : d.state);
 
     // Update global state while preserving current selections
     updateCharts({ 
-        state: dashboardState.selectedState,  // Preserve current state
+        state: clickedState,  // Preserve current state
         incidentId: clickedIncidentId,
         year: dashboardState.selectedYear,  // Preserve year filter
         gender: dashboardState.selectedGender // Preserve gender filter
@@ -366,7 +369,7 @@ scatterSvg1.selectAll(".x-axis text").on("click.toggleView", function(event, d) 
             console.log("Current Dashboard Statescats: d", dashboardState);
             // Update the global dashboard state
             updateCharts({ 
-                year: null,
+                year: selectedYear,
                 state: dashboardState.selectedState,        // Preserve current state
                 incidentId: dashboardState.selectedIncidentId,
                 gender: dashboardState.selectedGender  // Preserve selected incident
