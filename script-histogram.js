@@ -142,7 +142,7 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
             console.log("State Data:", selectedIncidentId);
             
             // Filter or aggregate data based on the selected year
-            /*const aggregatedData = selectedYear
+            const aggregatedData = selectedYear
                 ? stateData.filter(d => d.year === selectedYear) // Filter by selected year
                 : Array.from(
                       d3.rollup(
@@ -155,25 +155,8 @@ d3.csv("gun_data_with_rating.csv").then(function(data) {
                           year: "All Years", // Represent aggregated data
                           casualties
                       })
-                  );*/
+                  );
             
-            // Filter or aggregate data based on the selected year
-            const aggregatedData = selectedYear
-            ? stateData.filter(d => d.year === selectedYear && (!selectedIncidentId || d.incidents.includes(selectedIncidentId))) // Filter by year and incident ID
-            : Array.from(
-                d3.rollup(
-                    stateData.filter(d => !selectedIncidentId || d.incidents.includes(selectedIncidentId)), // Filter by incident ID across all years
-                    v => d3.sum(v, d => d.casualties),
-                    d => d.state
-                ),
-                ([state, casualties]) => ({
-                    state,
-                    year: "All Years", // Represent aggregated data
-                    casualties
-                })
-            );
-            //console.log("Aggregated Data:", aggregatedData);
-        
             // Adjust bar appearance based on the selected state
             const filteredData = aggregatedData.map(d => ({
                 ...d,
