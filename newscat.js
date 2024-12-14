@@ -114,7 +114,8 @@
         
             // Toggle only the incident ID
             const clickedIncidentId = dashboardState.selectedIncidentId === d.incident_id ? null : d.incident_id;
-            const clickedState = dashboardState.selectedState === d.state ? null : d.state;
+            const clickedState = dashboardState.selectedIncidentId ? null : 
+                     (dashboardState.selectedState === d.state ? null : d.state);
         
             // Update global state while preserving current selections
             updateCharts({ 
